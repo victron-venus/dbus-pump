@@ -13,11 +13,13 @@ The valve admits city water when the tank level drops below the configured
 minimum. Automation lives here (not in HA and not in any other client), so
 there is a single control plane.
 
-```
-Home Assistant ──REST──> dbus-pump (Cerbo GX) ──D-Bus──> Venus OS
-                              │                            │
-                        valve/pump switch            GX UI / VRM
-                        calls back to HA             Cerbo MQTT -> desktop
+```mermaid
+flowchart LR
+    HA[Home Assistant] -- REST --> DP[dbus-pump<br>Cerbo GX]
+    DP -- D-Bus --> VO[Venus OS]
+    VO --> GXUI[GX UI / VRM]
+    VO -- Cerbo MQTT --> DESK[Desktop]
+    DP -- "valve/pump switch calls back" --> HA
 ```
 
 ## Configuration
