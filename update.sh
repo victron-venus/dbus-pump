@@ -50,7 +50,9 @@ sleep 1
 #     does not respawn supervisors while we replace the dirs below, then kill
 #     anything whose cwd lives under our install tree. Fresh
 #     supervisors are spawned in step 6.
-rm -f /service/dbus-pump
+#     rm -rf (not rm -f): a pre-existing legacy install may have left a real
+#     directory here; ln -sf onto a directory would nest the link inside it.
+rm -rf /service/dbus-pump
 sleep 2
 for pid in /proc/[0-9]*; do
     cwd=$(readlink "$pid/cwd" 2>/dev/null) || continue

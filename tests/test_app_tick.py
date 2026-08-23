@@ -46,11 +46,8 @@ def test_tick_commands_valve_open_when_low(monkeypatch):
     snap = dict(BASE, level=10.0)
     app = build_app(snap)
     app.tick()
-    assert (
-        "switch",
-        "turn_on",
-        "switch.shutoff_valve",
-    ) not in app.client.calls  # entity comes from config
+    # valve command targets the configured HA switch entity
+    assert ("switch", "turn_on", "switch.shutoff_valve") in app.client.calls
     assert any(c[1] == "turn_on" for c in app.client.calls)
     assert app.services.valve.items["/State"] == 1
 
