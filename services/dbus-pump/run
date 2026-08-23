@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /data/dbus-pump || exit 1
+exec python3 -m dbus_pump
