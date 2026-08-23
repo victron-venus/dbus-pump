@@ -182,10 +182,10 @@ def build_app() -> App:
 
 
 def serve(app: App) -> None:
-    import gobject  # provided by Venus OS python env
+    from gi.repository import GLib  # provided by Venus OS python env
 
-    gobject.timeout_add(app.loop_interval_ms, app.tick)
-    mainloop = gobject.MainLoop()
+    GLib.timeout_add(app.loop_interval_ms, app.tick)
+    mainloop = GLib.MainLoop()
 
     def _stop(*_args):
         logger.info("Shutting down")
@@ -223,6 +223,11 @@ def main() -> int:
     if not VEDBUS_AVAILABLE:
         logger.error("vedbus/dbus not available - run on the Cerbo GX")
         return 1
+    from dbus.mainloop.glib import DBusGMainLoop
+
+    # Must run before any VeDbusService is created (services export onto the
+    # default main loop).
+    DBusGMainLoop(set_as_default=True)
     serve(build_app())
     return 0
 

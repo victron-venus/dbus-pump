@@ -1,6 +1,7 @@
 """Integration-ish tests for App.tick wiring with fake client/services."""
 
 import dbus_pump.main as main_mod
+from dbus_pump import config as cfg
 from dbus_pump.control import ValveController
 from dbus_pump.main import App
 from dbus_pump.service import WaterSystemServices
@@ -46,11 +47,12 @@ def test_tick_commands_valve_open_when_low(monkeypatch):
     snap = dict(BASE, level=10.0)
     app = build_app(snap)
     app.tick()
+    # valve command targets the configured HA switch entity
     assert (
         "switch",
         "turn_on",
-        "switch.shutoff_valve",
-    ) not in app.client.calls  # entity comes from config
+        cfg.HA_VALVE_SWITCH_ENTITY,
+    ) in app.client.calls
     assert any(c[1] == "turn_on" for c in app.client.calls)
     assert app.services.valve.items["/State"] == 1
 

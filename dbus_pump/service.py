@@ -34,17 +34,17 @@ class NullDbusService:
         self.items: dict[str, object] = {}
         self._onchange: dict[str, callable] = {}
 
-    def add_path(self, path, value, description="", writeable=False, onchange=None, **_kw):
+    def add_path(self, path, value, description="", writeable=False, onchangecallback=None, **_kw):
         self.items[path] = value
-        if onchange:
-            self._onchange[path] = onchange
+        if onchangecallback:
+            self._onchange[path] = onchangecallback
 
     def __setitem__(self, path, value):
         old = self.items.get(path)
         self.items[path] = value
         cb = self._onchange.get(path)
         if cb and old != value:
-            cb(value)
+            cb(path, value)  # match vedbus (path, value) signature
 
     def __getitem__(self, path):
         return self.items[path]
@@ -55,7 +55,11 @@ class NullDbusService:
 
 def _make_service(service_name: str):
     if VEDBUS_AVAILABLE:
-        return VeDbusService(service_name)
+        # One private connection per service: VeDbusService exports at '/',
+        # and a single connection can register that object path only once.
+        import dbus
+
+        return VeDbusService(service_name, bus=dbus.SystemBus(private=True))
     return NullDbusService(service_name)
 
 
@@ -90,12 +94,16 @@ class WaterSystemServices:
         on_pump_mode=None,
         on_valve_mode=None,
     ) -> None:
-        self.tank = _make_service(f"com.victronenergy.tank.{tank_instance}")
+        # D-Bus bus names forbid a digit directly after a dot, so the device
+        # instance goes into /DeviceInstance only; the name suffix is text.
+        tank_bus_name = f"com.victronenergy.tank.ha_tank{tank_instance}"
+        self.tank = _make_service(tank_bus_name)
         _identity_paths(
             self.tank, "Water tank", version, "Water tank (HA)", tank_instance, "Home Assistant"
         )
         self.tank.add_path("/Level", None)
         self.tank.add_path("/FluidType", FLUID_TYPE_FRESH_WATER)
+        self.capacity_m3 = 0.0  # mirror of /Capacity; VeDbusService has no .items
         self.tank.add_path("/Capacity", 0.0)
         self.tank.add_path("/Remaining", 0.0)
         self.tank.add_path("/Status", 0)  # 0 = OK
@@ -104,13 +112,10 @@ class WaterSystemServices:
             svc = _make_service(f"com.victronenergy.pump.startstop{inst}")
             _identity_paths(svc, name, version, name, inst, "Home Assistant")
             svc.add_path("/State", 0)  # 0 stopped, 1 running
-            svc.add_path(
-                "/Mode",
-                0,
-                writeable=True,
-                onchange=on_mode,
-            )
-            svc.add_path("/ActiveTankService", f"com.victronenergy.tank.{tank_instance}")
+            # vedbus calls onchangecallback(path, value); our handlers take
+            # the last arg so both signatures work.
+            svc.add_path("/Mode", 0, writeable=True, onchangecallback=on_mode)
+            svc.add_path("/ActiveTankService", tank_bus_name)
             return svc
 
         self.pump = _make_pump("Water pump", pump_startstop_instance, on_pump_mode)
@@ -119,9 +124,7 @@ class WaterSystemServices:
     # --- updates -------------------------------------------------------------
     def update_tank_level(self, level_pct: float | None) -> None:
         self.tank["/Level"] = round(level_pct, 1) if level_pct is not None else None
-        remaining = (
-            self.tank.items["/Capacity"] * (level_pct / 100.0) if level_pct is not None else 0.0
-        )
+        remaining = self.capacity_m3 * (level_pct / 100.0) if level_pct is not None else 0.0
         self.tank["/Remaining"] = round(remaining, 3)
         self.tank["/Status"] = 0 if level_pct is not None else 4  # 4 = unknown sensor
 

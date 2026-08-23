@@ -15,7 +15,7 @@ def build(**kw):
 
 def test_service_names():
     s = build()
-    assert s.tank.service_name == "com.victronenergy.tank.21"
+    assert s.tank.service_name == "com.victronenergy.tank.ha_tank21"
     assert s.pump.service_name == "com.victronenergy.pump.startstop1"
     assert s.valve.service_name == "com.victronenergy.pump.startstop2"
 
@@ -42,7 +42,7 @@ def test_tank_fluid_type_fresh_water():
 
 def test_update_tank_level_and_remaining():
     s = build()
-    s.tank.items["/Capacity"] = 2.0
+    s.capacity_m3 = 2.0
     s.update_tank_level(50.0)
     assert s.tank.items["/Level"] == 50.0
     assert s.tank.items["/Remaining"] == 1.0
@@ -63,7 +63,7 @@ def test_device_state_update():
 def test_null_service_onchange_fires():
     seen = []
     svc = NullDbusService("test")
-    svc.add_path("/Mode", 0, writeable=True, onchange=lambda v: seen.append(v))
+    svc.add_path("/Mode", 0, writeable=True, onchangecallback=lambda p, v: seen.append(v))
     svc["/Mode"] = 2
     assert seen == [2]
     svc["/Mode"] = 2  # no change -> no callback

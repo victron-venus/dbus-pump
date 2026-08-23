@@ -9,3 +9,4 @@ release.txt
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+dbus_pump.egg-info/
