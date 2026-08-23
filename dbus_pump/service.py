@@ -34,9 +34,7 @@ class NullDbusService:
         self.items: dict[str, object] = {}
         self._onchange: dict[str, callable] = {}
 
-    def add_path(
-        self, path, value, description="", writeable=False, onchangecallback=None, **_kw
-    ):
+    def add_path(self, path, value, description="", writeable=False, onchangecallback=None, **_kw):
         self.items[path] = value
         if onchangecallback:
             self._onchange[path] = onchangecallback
