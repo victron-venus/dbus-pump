@@ -35,7 +35,9 @@ class ValveController:
         self.mode = MODE_AUTO
         self.last_level_time: float | None = None  # clock time of last fresh level
         self._desired: bool = False  # current commanded state
-        self._last_transition: float = 0.0  # clock time of last command change
+        # No transition yet -> allow the first one immediately (0.0 would
+        # suppress it for min_switch_interval on hosts with small uptime).
+        self._last_transition: float = self._clock() - self.min_switch_interval
 
     def set_mode(self, mode: int) -> None:
         if mode in (MODE_AUTO, MODE_ON, MODE_OFF):
