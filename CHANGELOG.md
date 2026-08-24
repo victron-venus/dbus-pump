@@ -12,6 +12,12 @@ All notable changes to this project will be documented in this file.
   `TANK_RADIUS_CM`) — no HA-side template sensor; falls back to
   `Capacity × Level` when the raw sensor is unavailable.
 
+## [Unreleased]
+
+### Documentation
+- README: full water data-flow diagram (HA sensors → dbus-pump → D-Bus → Cerbo
+  MQTT topics → consumers) and valve hysteresis sequence diagram; consumer table.
+
 ## [0.1.0] - 2026-08-23
 
 ### Added

@@ -5,21 +5,93 @@ Home-Assistant-backed water tank/pump/valve bridge for Victron Venus OS.
 Runs **on the Cerbo GX** and exposes a Home Assistant water system as native
 Venus services:
 
-- `com.victronenergy.tank.<N>` — fresh-water tank level (`/Level` in %)
-- `com.victronenergy.pump.startstop<P>` — well/pressure pump ("Water pump")
-- `com.victronenergy.pump.startstop<V>` — city-water shutoff valve ("City water valve")
+- `com.victronenergy.tank.ha_tank<N>` (`DEVICE_INSTANCE_TANK`) — fresh-water tank level (`/Level` in %)
+- `com.victronenergy.pump.startstop<P>` (`PUMP_STARTSTOP_INSTANCE`) — well/pressure pump ("Water pump")
+- `com.victronenergy.pump.startstop<V>` (`VALVE_STARTSTOP_INSTANCE`) — city-water shutoff valve ("City water valve")
+
+Venus OS bridges these services to Cerbo MQTT topics
+`N/<portal>/tank/<instance>/Level` and `N/<portal>/pump/startstop<instance>/State`,
+which is what the remote consumers (desktop, dashboards) subscribe to.
 
 The valve admits city water when the tank level drops below the configured
 minimum. Automation lives here (not in HA and not in any other client), so
 there is a single control plane.
 
+### Water data flow
+
+dbus-pump is the **only** water source for every consumer: Venus services on
+D-Bus locally, Cerbo MQTT topics remotely. No client talks to Home Assistant
+for water.
+
 ```mermaid
 flowchart LR
-    HA[Home Assistant] -- REST --> DP[dbus-pump<br>Cerbo GX]
-    DP -- D-Bus --> VO[Venus OS]
-    VO --> GXUI[GX UI / VRM]
-    VO -- Cerbo MQTT --> DESK[Desktop]
-    DP -- "valve/pump switch calls back" --> HA
+    subgraph HAS["Home Assistant - sensor source only"]
+        LVL["tank level (%)<br/>sensor.water_level_2_water_level"]
+        CM["raw water column (cm)<br/>TANK_WATER_CM_ENTITY"]
+        PSW["switch.pump_switch"]
+        VSW["switch.shutoff_valve"]
+    end
+
+    subgraph GX["Cerbo GX"]
+        DP["dbus-pump<br/>hysteresis + fail-safe automation"]
+        subgraph DBUS["Venus D-Bus"]
+            TANK["com.victronenergy.tank.ha_tank21<br/>/Level /Capacity /Remaining /Status"]
+            PUMP["com.victronenergy.pump.startstop1<br/>Water pump /State"]
+            VALVE["com.victronenergy.pump.startstop2<br/>City water valve /State"]
+        end
+        MQB["Cerbo MQTT broker"]
+        CTRL["inverter-control<br/>water.py reader"]
+    end
+
+    TOPICS["N/&lt;portal&gt;/tank/21/Level<br/>N/&lt;portal&gt;/pump/startstop1/State<br/>N/&lt;portal&gt;/pump/startstop2/State"]
+
+    LVL --> DP
+    CM --> DP
+    DP -- REST poll --> LVL
+    DP -- actuation callback --> PSW
+    DP -- actuation callback --> VSW
+
+    DP --> TANK
+    DP --> PUMP
+    DP --> VALVE
+    TANK --> MQB
+    PUMP --> MQB
+    VALVE --> MQB
+
+    CTRL -- D-Bus reads --> DBUS
+    MQB --> TOPICS
+    TOPICS --> GXUI["GX UI / VRM"]
+    TOPICS --> DESK["inverter-desktop"]
+    TOPICS --> PYDASH["inverter-dashboard"]
+    TOPICS --> GODASH["inverter-dashboard-go"]
+```
+
+Consumers and the paths they read:
+
+| Consumer | Source | Path/topic |
+| --- | --- | --- |
+| GX UI / VRM | D-Bus | native tank gauge + pump/valve devices |
+| inverter-control (on GX) | D-Bus | `com.victronenergy.tank.ha_tank21` `/Level`, `pump.startstop{1,2}` `/State` |
+| inverter-desktop | Cerbo MQTT | `N/<portal>/tank/+/Level`, `N/<portal>/pump/+/State` |
+| inverter-dashboard | Cerbo MQTT | same, gated by `CERBO_PORTAL_ID` |
+| inverter-dashboard-go | Cerbo MQTT | same, `cerbo:` config section |
+
+Valve/pump hysteresis sequence (automation is entirely inside dbus-pump):
+
+```mermaid
+sequenceDiagram
+    participant S as Tank level sensor
+    participant DP as dbus-pump
+    participant V as Valve switch (HA)
+    S->>DP: level % (fresh)
+    alt level <= VALVE_START_VALUE (30%)
+        DP->>V: turn ON (admit city water)
+    else level >= VALVE_STOP_VALUE (85%)
+        DP->>V: turn OFF
+    else stale > SENSOR_STALE_TIMEOUT
+        DP->>V: force OFF (fail-safe)
+    end
+    Note over DP: MIN_SWITCH_INTERVAL anti-chatter<br/>between transitions
 ```
 
 ## Configuration
