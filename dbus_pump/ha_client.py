@@ -15,11 +15,14 @@ import requests
 logger = logging.getLogger(__name__)
 
 # Jinja template sent to /api/template. Tokens are replaced literally
-# (str.format would fight the Jinja braces).
+# (str.format would fight the Jinja braces). @CM@ (raw water-column height)
+# is optional; when unset a placeholder id is used so states() renders
+# 'unknown' instead of erroring on an empty entity_id.
 TEMPLATE_BODY = """{{ {
   'level': states('@LEVEL@') | string,
   'pump': states('@PUMP@'),
-  'valve': states('@VALVE@')
+  'valve': states('@VALVE@'),
+  'cm': states('@CM@') | string
 } | to_json }}"""
 
 
@@ -63,11 +66,14 @@ class CircuitBreaker:
             logger.warning("Circuit breaker OPEN after %i consecutive failures", self._failures)
 
 
-def build_template(level_entity: str, pump_entity: str, valve_entity: str) -> str:
+def build_template(
+    level_entity: str, pump_entity: str, valve_entity: str, cm_entity: str = ""
+) -> str:
     return (
         TEMPLATE_BODY.replace("@LEVEL@", level_entity)
         .replace("@PUMP@", pump_entity)
         .replace("@VALVE@", valve_entity)
+        .replace("@CM@", cm_entity or "__no_cm_sensor__")
     )
 
 
@@ -89,16 +95,23 @@ class HaClient:
         valve_entity: str,
         timeout: float = 3.0,
         breaker: CircuitBreaker | None = None,
+        cm_entity: str = "",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.level_entity = level_entity
         self.pump_entity = pump_entity
         self.valve_entity = valve_entity
+        self.cm_entity = cm_entity  # raw water-column height (cm), optional
         self.timeout = timeout
         self.breaker = breaker or CircuitBreaker()
         # Last-known-good snapshot, served while HA is unreachable.
-        self.last_known: dict[str, Any] = {"level": None, "pump": None, "valve": None}
-        self._template = build_template(level_entity, pump_entity, valve_entity)
+        self.last_known: dict[str, Any] = {
+            "level": None,
+            "pump": None,
+            "valve": None,
+            "cm": None,
+        }
+        self._template = build_template(level_entity, pump_entity, valve_entity, cm_entity)
         self._configured = all((base_url, token, level_entity, pump_entity, valve_entity))
         self._session = requests.Session()
         if token:
@@ -116,7 +129,8 @@ class HaClient:
     def poll(self) -> dict[str, Any]:
         """Fetch level/pump/valve states.
 
-        Returns {'level': float|None, 'pump': bool|None, 'valve': bool|None,
+        Returns {'level': float|None, 'cm': float|None (raw water-column
+        height), 'pump': bool|None, 'valve': bool|None,
         'ok': bool} where ok=True means the values were fetched live on this
         call. On failure the last-known snapshot is returned with ok=False.
         """
@@ -141,13 +155,19 @@ class HaClient:
                 level: float | None = float(level_raw)
             except ValueError:
                 level = None
+            cm_raw = str(data.get("cm", "")).strip()
+            try:
+                water_cm: float | None = float(cm_raw)
+            except ValueError:
+                water_cm = None
             result.update(
                 level=level,
+                cm=water_cm,  # None when sensor unset/unavailable; liters computed in App.tick
                 pump=state_is_on(data.get("pump")),
                 valve=state_is_on(data.get("valve")),
                 ok=level is not None,
             )
-            self.last_known = {k: result[k] for k in ("level", "pump", "valve")}
+            self.last_known = {k: result[k] for k in ("level", "pump", "valve", "cm")}
             self.breaker.record_success()
         except requests.exceptions.Timeout as exc:
             self.breaker.record_failure()

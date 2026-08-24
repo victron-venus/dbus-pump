@@ -22,14 +22,15 @@ def make_client(**kw):
         "level_entity": "sensor.level",
         "pump_entity": "switch.pump",
         "valve_entity": "switch.valve",
+        "cm_entity": "sensor.water_cm",
         "timeout": 3.0,
     }
     defaults.update(kw)
     return HaClient(**defaults)
 
 
-def template_response(level="42.0", pump="on", valve="off"):
-    payload = {"level": level, "pump": pump, "valve": valve}
+def template_response(level="42.0", pump="on", valve="off", cm="82.5"):
+    payload = {"level": level, "pump": pump, "valve": valve, "cm": cm}
     resp = MagicMock(status_code=200, text=json.dumps(payload))
     return resp
 
@@ -37,6 +38,13 @@ def template_response(level="42.0", pump="on", valve="off"):
 def test_build_template_contains_entities():
     t = build_template("s.l", "s.p", "s.v")
     assert "states('s.l')" in t and "'pump': states('s.p')" in t and "'valve': states('s.v')" in t
+    # no raw-height entity -> placeholder id, still valid Jinja for HA
+    assert "states('__no_cm_sensor__')" in t
+
+
+def test_build_template_cm_entity():
+    t = build_template("s.l", "s.p", "s.v", "sensor.water_cm")
+    assert "states('sensor.water_cm')" in t
 
 
 def test_state_is_on_mapping():
@@ -54,10 +62,20 @@ def test_poll_success(post):
     c = make_client()
     r = c.poll()
     assert r["ok"] is True and r["level"] == 42.0
+    assert r["cm"] == 82.5
     assert r["pump"] is True and r["valve"] is False
     args, kwargs = post.call_args
     assert args[0] == "http://ha:8123/api/template"
     assert "states('sensor.level')" in kwargs["json"]["template"]
+    assert "states('sensor.water_cm')" in kwargs["json"]["template"]
+
+
+@patch("dbus_pump.ha_client.requests.Session.post")
+def test_poll_cm_unavailable_is_none_but_ok(post):
+    post.return_value = template_response(cm="unknown", level="50.0")
+    c = make_client()
+    r = c.poll()
+    assert r["ok"] is True and r["cm"] is None
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")

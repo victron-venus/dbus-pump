@@ -1,5 +1,9 @@
 """Integration-ish tests for App.tick wiring with fake client/services."""
 
+import math
+
+import pytest
+
 import dbus_pump.main as main_mod
 from dbus_pump import config as cfg
 from dbus_pump.control import ValveController
@@ -63,6 +67,34 @@ def test_tick_no_control_when_disabled(monkeypatch):
     app = build_app(snap, enable_control=False)
     app.tick()
     assert app.client.calls == []
+
+
+def test_tank_remaining_m3_math():
+    f = main_mod._tank_remaining_m3
+    assert f(None, 18.0, 35.56) is None
+    assert f(82.0, 18.0, 0.0) is None  # no geometry -> fallback signal
+    assert f(10.0, 18.0, 35.56) == 0.0  # below dead zone clamps to 0
+    # (28 - 18) cm column, r=35.56: liters / 1000
+    assert f(28.0, 18.0, 35.56) == pytest.approx(10.0 * math.pi * 35.56**2 / 1e6, rel=1e-9)
+
+
+def test_tick_computes_remaining_from_raw_height(monkeypatch):
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    monkeypatch.setattr(cfg, "TANK_OFFSET_CM", 18.0)
+    monkeypatch.setattr(cfg, "TANK_RADIUS_CM", 35.56)
+    snap = dict(BASE, cm=118.0)
+    app = build_app(snap)
+    app.tick()
+    expected_m3 = round((118.0 - 18.0) * math.pi * 35.56**2 / 1e6, 3)
+    assert app.services.tank.items["/Remaining"] == expected_m3
+
+
+def test_tick_remaining_falls_back_to_capacity_derivation(monkeypatch):
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    app = build_app(dict(BASE))  # no 'cm' in snapshot
+    app.services.capacity_m3 = 0.387
+    app.tick()
+    assert app.services.tank.items["/Remaining"] == 0.194
 
 
 def test_tick_stale_publishes_invalid_level(monkeypatch):

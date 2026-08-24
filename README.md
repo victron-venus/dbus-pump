@@ -30,6 +30,8 @@ Copy `local_config.example.py` to `local_config.py` on the device and fill in:
 | --- | --- | --- |
 | `HA_URL` / `HA_TOKEN` | Home Assistant REST endpoint + long-lived token | — |
 | `HA_WATER_LEVEL_ENTITY` | tank level sensor (%) | `sensor.water_level_2_water_level` |
+| `TANK_CAPACITY_LITERS` | tank size → `/Capacity`; GUIv2 needs it for liters | 0 |
+| `TANK_WATER_CM_ENTITY` / `TANK_OFFSET_CM` / `TANK_RADIUS_CM` | raw water-column sensor (cm) + geometry → `/Remaining`, computed here | — |
 | `HA_PUMP_SWITCH_ENTITY` | pump switch | `switch.pump_switch` |
 | `HA_VALVE_SWITCH_ENTITY` | shutoff valve switch | `switch.shutoff_valve` |
 | `DEVICE_INSTANCE_TANK` | D-Bus device instance for the tank service | 21 |
@@ -38,6 +40,24 @@ Copy `local_config.example.py` to `local_config.py` on the device and fill in:
 | `SENSOR_STALE_TIMEOUT` | s without fresh level → force valve CLOSED | 120 |
 | `MIN_SWITCH_INTERVAL` | anti-chatter min seconds between transitions | 60 |
 | `ENABLE_CONTROL` | master switch for automated actuation | False |
+
+### Tank capacity and remaining liters
+
+GUIv2 shows the tank gauge in percent only until it knows the tank size.
+The bridge publishes `/Capacity` from `TANK_CAPACITY_LITERS` (D-Bus uses m³;
+liters are converted internally).
+
+Venus OS does not derive `/Remaining` for third-party tanks, and level % is
+not volume-proportional when the sensor has a dead zone at the bottom.
+dbus-pump therefore computes remaining liters itself from the raw
+water-column sensor (`TANK_WATER_CM_ENTITY`, cm):
+
+    liters = (cm − TANK_OFFSET_CM) × π × TANK_RADIUS_CM² / 1000
+
+`TANK_OFFSET_CM` is the sensor reading at an empty tank (site values:
+18 cm), `TANK_RADIUS_CM` the cylinder radius (35.56 cm). Readings below
+the offset clamp to 0 L. If the raw sensor is unavailable, `/Remaining`
+falls back to `Capacity × Level`.
 
 ## Install
 

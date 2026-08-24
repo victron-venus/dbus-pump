@@ -93,6 +93,7 @@ class WaterSystemServices:
         version: str,
         on_pump_mode=None,
         on_valve_mode=None,
+        capacity_m3: float = 0.0,
     ) -> None:
         # D-Bus bus names forbid a digit directly after a dot, so the device
         # instance goes into /DeviceInstance only; the name suffix is text.
@@ -103,8 +104,8 @@ class WaterSystemServices:
         )
         self.tank.add_path("/Level", None)
         self.tank.add_path("/FluidType", FLUID_TYPE_FRESH_WATER)
-        self.capacity_m3 = 0.0  # mirror of /Capacity; VeDbusService has no .items
-        self.tank.add_path("/Capacity", 0.0)
+        self.capacity_m3 = float(capacity_m3)  # mirror of /Capacity; VeDbusService has no .items
+        self.tank.add_path("/Capacity", self.capacity_m3)
         self.tank.add_path("/Remaining", 0.0)
         self.tank.add_path("/Status", 0)  # 0 = OK
 
@@ -122,10 +123,13 @@ class WaterSystemServices:
         self.valve = _make_pump("City water valve", valve_startstop_instance, on_valve_mode)
 
     # --- updates -------------------------------------------------------------
-    def update_tank_level(self, level_pct: float | None) -> None:
+    def update_tank_level(self, level_pct: float | None, remaining_m3: float | None = None) -> None:
+        """Publish level; remaining comes from HA when given (level % is not
+        volume-proportional on tanks with a sensor dead zone), else derived."""
         self.tank["/Level"] = round(level_pct, 1) if level_pct is not None else None
-        remaining = self.capacity_m3 * (level_pct / 100.0) if level_pct is not None else 0.0
-        self.tank["/Remaining"] = round(remaining, 3)
+        if remaining_m3 is None and level_pct is not None:
+            remaining_m3 = self.capacity_m3 * (level_pct / 100.0)
+        self.tank["/Remaining"] = round(remaining_m3 if remaining_m3 is not None else 0.0, 3)
         self.tank["/Status"] = 0 if level_pct is not None else 4  # 4 = unknown sensor
 
     def set_connected(self, connected: bool) -> None:

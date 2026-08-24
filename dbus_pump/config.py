@@ -39,6 +39,15 @@ HA_WATER_LEVEL_ENTITY: str = str(_get("HA_WATER_LEVEL_ENTITY", ""))
 HA_PUMP_SWITCH_ENTITY: str = str(_get("HA_PUMP_SWITCH_ENTITY", ""))
 HA_VALVE_SWITCH_ENTITY: str = str(_get("HA_VALVE_SWITCH_ENTITY", ""))
 
+# --- Tank geometry ------------------------------------------------------------
+# /Capacity comes straight from config; /Remaining is computed HERE from the
+# raw water-column height so HA stays a plain sensor source:
+#   liters = (cm - TANK_OFFSET_CM) * pi * TANK_RADIUS_CM^2 / 1000
+TANK_CAPACITY_LITERS: float = float(_get("TANK_CAPACITY_LITERS", 0.0))
+TANK_WATER_CM_ENTITY: str = str(_get("TANK_WATER_CM_ENTITY", ""))  # raw height, cm
+TANK_OFFSET_CM: float = float(_get("TANK_OFFSET_CM", 0.0))  # sensor reading at empty tank
+TANK_RADIUS_CM: float = float(_get("TANK_RADIUS_CM", 0.0))
+
 # --- D-Bus identity -----------------------------------------------------------
 DEVICE_INSTANCE_TANK: int = int(_get("DEVICE_INSTANCE_TANK", 21))
 PUMP_STARTSTOP_INSTANCE: int = int(_get("PUMP_STARTSTOP_INSTANCE", 1))
