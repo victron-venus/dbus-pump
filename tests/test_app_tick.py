@@ -65,6 +65,22 @@ def test_tick_no_control_when_disabled(monkeypatch):
     assert app.client.calls == []
 
 
+def test_tick_publishes_ha_volume_as_remaining(monkeypatch):
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    snap = dict(BASE, volume=200.0)  # liters from HA
+    app = build_app(snap)
+    app.tick()
+    assert app.services.tank.items["/Remaining"] == 0.2
+
+
+def test_tick_volume_falls_back_to_capacity_derivation(monkeypatch):
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    app = build_app(dict(BASE))
+    app.services.capacity_m3 = 0.387  # no volume in snapshot -> Capacity x Level
+    app.tick()
+    assert app.services.tank.items["/Remaining"] == 0.194
+
+
 def test_tick_stale_publishes_invalid_level(monkeypatch):
     monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
     snap = {"level": None, "pump": None, "valve": None, "ok": False}

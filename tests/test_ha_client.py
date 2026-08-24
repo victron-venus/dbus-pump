@@ -22,14 +22,15 @@ def make_client(**kw):
         "level_entity": "sensor.level",
         "pump_entity": "switch.pump",
         "valve_entity": "switch.valve",
+        "volume_entity": "sensor.liters",
         "timeout": 3.0,
     }
     defaults.update(kw)
     return HaClient(**defaults)
 
 
-def template_response(level="42.0", pump="on", valve="off"):
-    payload = {"level": level, "pump": pump, "valve": valve}
+def template_response(level="42.0", pump="on", valve="off", volume="123.4"):
+    payload = {"level": level, "pump": pump, "valve": valve, "volume": volume}
     resp = MagicMock(status_code=200, text=json.dumps(payload))
     return resp
 
@@ -37,6 +38,13 @@ def template_response(level="42.0", pump="on", valve="off"):
 def test_build_template_contains_entities():
     t = build_template("s.l", "s.p", "s.v")
     assert "states('s.l')" in t and "'pump': states('s.p')" in t and "'valve': states('s.v')" in t
+    # no volume entity -> placeholder id, still valid Jinja for HA
+    assert "states('__no_volume_sensor__')" in t
+
+
+def test_build_template_volume_entity():
+    t = build_template("s.l", "s.p", "s.v", "sensor.vol")
+    assert "states('sensor.vol')" in t
 
 
 def test_state_is_on_mapping():
@@ -54,10 +62,20 @@ def test_poll_success(post):
     c = make_client()
     r = c.poll()
     assert r["ok"] is True and r["level"] == 42.0
+    assert r["volume"] == 123.4
     assert r["pump"] is True and r["valve"] is False
     args, kwargs = post.call_args
     assert args[0] == "http://ha:8123/api/template"
     assert "states('sensor.level')" in kwargs["json"]["template"]
+    assert "states('sensor.liters')" in kwargs["json"]["template"]
+
+
+@patch("dbus_pump.ha_client.requests.Session.post")
+def test_poll_volume_unavailable_is_none_but_ok(post):
+    post.return_value = template_response(volume="unknown", level="50.0")
+    c = make_client()
+    r = c.poll()
+    assert r["ok"] is True and r["volume"] is None
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")

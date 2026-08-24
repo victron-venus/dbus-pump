@@ -6,8 +6,12 @@ HA_TOKEN = "your_long_lived_access_token_here"
 
 # HA entities
 HA_WATER_LEVEL_ENTITY = "sensor.water_level_2_water_level"  # tank level in %
+HA_WATER_VOLUME_ENTITY = "sensor.water_tank_liters"  # tank volume in L (see README)
 HA_PUMP_SWITCH_ENTITY = "switch.pump_switch"
 HA_VALVE_SWITCH_ENTITY = "switch.shutoff_valve"
+
+# Tank size in liters -> published as /Capacity on the D-Bus tank service
+TANK_CAPACITY_LITERS = 387.0
 
 # D-Bus instances (verify no collision on the GX: see TODO 4.1)
 DEVICE_INSTANCE_TANK = 21  # com.victronenergy.tank.<N>

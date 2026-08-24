@@ -81,11 +81,11 @@ class App:
         self.services.set_connected(ha_reachable)
 
         level = snapshot["level"] if now_ok else self.controller_level_if_fresh(snapshot)
-        if level is not None:
-            self.services.update_tank_level(level)
-        else:
-            # Stale: publish invalid level so consumers see the gap.
-            self.services.update_tank_level(None)
+        # HA-computed liters win over Capacity x Level when available.
+        vol_l = snapshot.get("volume")
+        self.services.update_tank_level(
+            level, remaining_m3=(vol_l / 1000.0 if vol_l is not None else None)
+        )
 
         self.services.update_device_state("pump", snapshot["pump"])
         self.services.update_device_state("valve", snapshot["valve"])
@@ -163,12 +163,14 @@ def build_app() -> App:
         pump_entity=config.HA_PUMP_SWITCH_ENTITY,
         valve_entity=config.HA_VALVE_SWITCH_ENTITY,
         timeout=config.HA_TIMEOUT,
+        volume_entity=config.HA_WATER_VOLUME_ENTITY,
     )
     services = WaterSystemServices(
         tank_instance=config.DEVICE_INSTANCE_TANK,
         pump_startstop_instance=config.PUMP_STARTSTOP_INSTANCE,
         valve_startstop_instance=config.VALVE_STARTSTOP_INSTANCE,
         version=config.SOFTWARE_VERSION,
+        capacity_m3=config.TANK_CAPACITY_LITERS / 1000.0,
         on_pump_mode=_mode_handler_wrap(lambda m: app.handle_mode("pump", int(m))),
         on_valve_mode=_mode_handler_wrap(lambda m: app.handle_mode("valve", int(m))),
     )

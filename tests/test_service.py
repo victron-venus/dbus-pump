@@ -52,6 +52,25 @@ def test_update_tank_level_and_remaining():
     assert s.tank.items["/Status"] == 4
 
 
+def test_capacity_from_constructor_published():
+    s = build(capacity_m3=0.387)  # 387 L
+    assert s.tank.items["/Capacity"] == 0.387
+
+
+def test_remaining_fallback_capacity_times_level():
+    s = build(capacity_m3=0.387)
+    s.update_tank_level(100.0)
+    assert s.tank.items["/Remaining"] == 0.387
+
+
+def test_explicit_remaining_overrides_derivation():
+    # level % is not volume-proportional when the sensor has a dead zone;
+    # HA-computed liters must win.
+    s = build(capacity_m3=0.387)
+    s.update_tank_level(50.0, remaining_m3=0.15)
+    assert s.tank.items["/Remaining"] == 0.15
+
+
 def test_device_state_update():
     s = build()
     s.update_device_state("pump", True)
