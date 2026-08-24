@@ -10,7 +10,7 @@ Venus services:
 - `com.victronenergy.pump.startstop<V>` (`VALVE_STARTSTOP_INSTANCE`) — city-water shutoff valve ("City water valve")
 
 Venus OS bridges these services to Cerbo MQTT topics
-`N/<portal>/tank/<instance>/Level` and `N/<portal>/pump/startstop<instance>/State`,
+`N/<portal>/tank/<instance>/Level` and `N/<portal>/pump/<instance>/State`,
 which is what the remote consumers (desktop, dashboards) subscribe to.
 
 The valve admits city water when the tank level drops below the configured
@@ -43,7 +43,7 @@ flowchart LR
         CTRL["inverter-control<br/>water.py reader"]
     end
 
-    TOPICS["N/&lt;portal&gt;/tank/21/Level<br/>N/&lt;portal&gt;/pump/startstop1/State<br/>N/&lt;portal&gt;/pump/startstop2/State"]
+    TOPICS["N/&lt;portal&gt;/tank/21/Level<br/>N/&lt;portal&gt;/pump/1/State<br/>N/&lt;portal&gt;/pump/2/State"]
 
     LVL --> DP
     CM --> DP
@@ -72,7 +72,7 @@ Consumers and the paths they read:
 | --- | --- | --- |
 | GX UI / VRM | D-Bus | native tank gauge + pump/valve devices |
 | inverter-control (on GX) | D-Bus | `com.victronenergy.tank.ha_tank21` `/Level`, `pump.startstop{1,2}` `/State` |
-| inverter-desktop | Cerbo MQTT | `N/<portal>/tank/+/Level`, `N/<portal>/pump/+/State` |
+| inverter-desktop | Cerbo MQTT | `N/<portal>/tank/+/Level`, `N/<portal>/pump/+/State` (plain instance in 4th segment) |
 | inverter-dashboard | Cerbo MQTT | same, gated by `CERBO_PORTAL_ID` |
 | inverter-dashboard-go | Cerbo MQTT | same, `cerbo:` config section |
 
