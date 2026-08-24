@@ -122,6 +122,27 @@ fi
 # 6. Refresh /service symlinks.
 ln -sf "$INSTALL_DIR/service/dbus-pump" /service/
 
+# 6a. Ensure boot persistence: /service is tmpfs, so rc.local recreates the
+#     symlink on every boot. Idempotent — only appends when block missing.
+RC_LOCAL="/data/rc.local"
+if [ ! -f "$RC_LOCAL" ]; then
+    printf '#!/bin/sh\n' > "$RC_LOCAL"
+    chmod +x "$RC_LOCAL"
+fi
+if ! grep -q "dbus-pump/service/dbus-pump" "$RC_LOCAL"; then
+    cat >> "$RC_LOCAL" << 'RCEOF'
+
+# === dbus-pump service persistence ===
+# Recreate /service symlink on boot (lost since /service is tmpfs)
+ln -sf /data/dbus-pump/service/dbus-pump /service/dbus-pump
+sleep 2
+svc -u /service/dbus-pump/log 2>/dev/null || true
+svc -u /service/dbus-pump 2>/dev/null || true
+# === end dbus-pump ===
+RCEOF
+    sep "added rc.local boot persistence block"
+fi
+
 # 6b. Give svscan a moment to spawn fresh supervisors for the new symlinks
 #     before we try to bring the services up, so svc -u lands on a live one.
 sleep 3
