@@ -7,9 +7,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `TANK_CAPACITY_LITERS` config → `/Capacity` on the tank service; GUIv2 now
   renders the gauge in liters.
-- `HA_WATER_VOLUME_ENTITY` (optional): liters from an HA template sensor are
-  published as `/Remaining` directly; falls back to `Capacity × Level` when
-  unset or unavailable.
+- Remaining liters computed locally from the raw water-column sensor
+  (`TANK_WATER_CM_ENTITY`) using configured tank geometry (`TANK_OFFSET_CM`,
+  `TANK_RADIUS_CM`) — no HA-side template sensor; falls back to
+  `Capacity × Level` when the raw sensor is unavailable.
 
 ## [0.1.0] - 2026-08-23
 

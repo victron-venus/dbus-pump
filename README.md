@@ -30,8 +30,8 @@ Copy `local_config.example.py` to `local_config.py` on the device and fill in:
 | --- | --- | --- |
 | `HA_URL` / `HA_TOKEN` | Home Assistant REST endpoint + long-lived token | — |
 | `HA_WATER_LEVEL_ENTITY` | tank level sensor (%) | `sensor.water_level_2_water_level` |
-| `HA_WATER_VOLUME_ENTITY` | tank volume sensor (L) — optional, see below | — |
 | `TANK_CAPACITY_LITERS` | tank size → `/Capacity`; GUIv2 needs it for liters | 0 |
+| `TANK_WATER_CM_ENTITY` / `TANK_OFFSET_CM` / `TANK_RADIUS_CM` | raw water-column sensor (cm) + geometry → `/Remaining`, computed here | — |
 | `HA_PUMP_SWITCH_ENTITY` | pump switch | `switch.pump_switch` |
 | `HA_VALVE_SWITCH_ENTITY` | shutoff valve switch | `switch.shutoff_valve` |
 | `DEVICE_INSTANCE_TANK` | D-Bus device instance for the tank service | 21 |
@@ -47,30 +47,17 @@ GUIv2 shows the tank gauge in percent only until it knows the tank size.
 The bridge publishes `/Capacity` from `TANK_CAPACITY_LITERS` (D-Bus uses m³;
 liters are converted internally).
 
-Venus OS does not derive `/Remaining` for third-party tanks, so the bridge
-publishes it itself:
+Venus OS does not derive `/Remaining` for third-party tanks, and level % is
+not volume-proportional when the sensor has a dead zone at the bottom.
+dbus-pump therefore computes remaining liters itself from the raw
+water-column sensor (`TANK_WATER_CM_ENTITY`, cm):
 
-- If `HA_WATER_VOLUME_ENTITY` is set, its value (liters, computed by HA) is
-  published directly. Use this when level % is not volume-proportional
-  (e.g. an ultrasonic sensor with a dead zone at the bottom).
-- Otherwise `/Remaining = Capacity × Level`.
+    liters = (cm − TANK_OFFSET_CM) × π × TANK_RADIUS_CM² / 1000
 
-Create the liters sensor in HA (`configuration.yaml`), adjusting `18` (dead
-zone, cm) and `35.56` (radius, cm) to your tank:
-
-```yaml
-template:
-  - sensor:
-      - name: "Water tank liters"
-        unit_of_measurement: "L"
-        device_class: volume_storage
-        state_class: measurement
-        state: >
-          {{ (( states('sensor.water_cm') | float(0) - 18 )
-              * 3.141592 * 35.56 * 35.56 / 1000 ) | round(2) }}
-```
-
-This yields entity id `sensor.water_tank_liters`.
+`TANK_OFFSET_CM` is the sensor reading at an empty tank (site values:
+18 cm), `TANK_RADIUS_CM` the cylinder radius (35.56 cm). Readings below
+the offset clamp to 0 L. If the raw sensor is unavailable, `/Remaining`
+falls back to `Capacity × Level`.
 
 ## Install
 

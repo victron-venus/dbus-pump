@@ -6,12 +6,16 @@ HA_TOKEN = "your_long_lived_access_token_here"
 
 # HA entities
 HA_WATER_LEVEL_ENTITY = "sensor.water_level_2_water_level"  # tank level in %
-HA_WATER_VOLUME_ENTITY = "sensor.water_tank_liters"  # tank volume in L (see README)
 HA_PUMP_SWITCH_ENTITY = "switch.pump_switch"
 HA_VALVE_SWITCH_ENTITY = "switch.shutoff_valve"
 
-# Tank size in liters -> published as /Capacity on the D-Bus tank service
+# Tank: /Capacity + remaining liters computed HERE from the raw water-column
+# height (no HA-side template sensor needed):
+#   liters = (cm - TANK_OFFSET_CM) * pi * TANK_RADIUS_CM^2 / 1000
 TANK_CAPACITY_LITERS = 387.0
+TANK_WATER_CM_ENTITY = "sensor.water_cm"  # raw height in cm from HA
+TANK_OFFSET_CM = 18.0  # sensor reading at empty tank (dead zone below)
+TANK_RADIUS_CM = 35.56  # cylinder radius
 
 # D-Bus instances (verify no collision on the GX: see TODO 4.1)
 DEVICE_INSTANCE_TANK = 21  # com.victronenergy.tank.<N>

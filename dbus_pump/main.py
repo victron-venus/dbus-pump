@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import math
 import os
 import signal
 import sys
@@ -81,10 +82,12 @@ class App:
         self.services.set_connected(ha_reachable)
 
         level = snapshot["level"] if now_ok else self.controller_level_if_fresh(snapshot)
-        # HA-computed liters win over Capacity x Level when available.
-        vol_l = snapshot.get("volume")
+        # Liters computed here from the raw height; falls back to Capacity x Level.
         self.services.update_tank_level(
-            level, remaining_m3=(vol_l / 1000.0 if vol_l is not None else None)
+            level,
+            remaining_m3=_tank_remaining_m3(
+                snapshot.get("cm"), config.TANK_OFFSET_CM, config.TANK_RADIUS_CM
+            ),
         )
 
         self.services.update_device_state("pump", snapshot["pump"])
@@ -132,6 +135,17 @@ def _now() -> float:
     return time.monotonic()
 
 
+def _tank_remaining_m3(water_cm: float | None, offset_cm: float, radius_cm: float) -> float | None:
+    """Remaining volume from raw water-column height, computed here so HA is
+    only a sensor source. Cylinder with a dead zone: negative readings (sensor
+    below the offset) clamp to 0. None when the reading or geometry is absent
+    (caller falls back to Capacity x Level)."""
+    if water_cm is None or radius_cm <= 0:
+        return None
+    liters = (water_cm - offset_cm) * math.pi * radius_cm * radius_cm / 1000.0
+    return max(0.0, liters) / 1000.0
+
+
 def _write_heartbeat() -> None:
     try:
         os.makedirs(os.path.dirname(config.HEARTBEAT_FILE), exist_ok=True)
@@ -163,7 +177,7 @@ def build_app() -> App:
         pump_entity=config.HA_PUMP_SWITCH_ENTITY,
         valve_entity=config.HA_VALVE_SWITCH_ENTITY,
         timeout=config.HA_TIMEOUT,
-        volume_entity=config.HA_WATER_VOLUME_ENTITY,
+        cm_entity=config.TANK_WATER_CM_ENTITY,
     )
     services = WaterSystemServices(
         tank_instance=config.DEVICE_INSTANCE_TANK,
