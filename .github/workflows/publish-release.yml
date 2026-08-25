@@ -1,0 +1,42 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Verify version sources match the tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          FILE_VER="$(cat version)"
+          PYPROJECT_VER="$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -n 1)"
+          if [ "v${FILE_VER}" != "${TAG}" ]; then
+            echo "version file (${FILE_VER}) does not match tag ${TAG}" >&2
+            exit 1
+          fi
+          if [ "${PYPROJECT_VER}" != "${FILE_VER}" ]; then
+            echo "pyproject.toml version (${PYPROJECT_VER}) does not match version file (${FILE_VER})" >&2
+            exit 1
+          fi
+
+      # No binary assets: deployments pull the tag tarball from codeload and
+      # run update.sh on the device (deploy.sh / auto-deploy webhook).
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          generate_release_notes: true
