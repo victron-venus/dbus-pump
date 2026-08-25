@@ -70,6 +70,17 @@ for pid in /proc/[0-9]*; do
 done
 sleep 1
 
+# 1d. Remove the legacy single-script install. Venus OS boot machinery links
+#     everything under /opt/victronenergy into /service at startup, so a left-
+#     over copy there resurrects a REAL /service/dbus-pump directory after
+#     every reboot - and the later `ln -sf` in step 6/rc.local then silently
+#     fails onto that directory, running stale code forever (seen 2026-08-25).
+LEGACY_OPT="/opt/victronenergy/dbus-pump"
+if [ -e "$LEGACY_OPT" ]; then
+    rm -rf "$LEGACY_OPT"
+    sep "removed legacy $LEGACY_OPT"
+fi
+
 mkdir -p "$INSTALL_DIR"
 sep "installing from $SRC_DIR into $INSTALL_DIR"
 
@@ -91,6 +102,9 @@ done
 
 # 4. Install daemontools services: every dir under service/ and services/
 #    maps to INSTALL_DIR/service/. New services are picked up automatically.
+#    A manual `svc -d` on the device leaves a `down` file behind, which would
+#    keep the service "normally down" across reboots even after `svc -u` -
+#    a deploy means "run the new version", so drop them.
 mkdir -p "$INSTALL_DIR/service"
 for svc in "$SRC_DIR/service"/* "$SRC_DIR/services"/*; do
     [ -d "$svc" ] || continue
@@ -98,6 +112,7 @@ for svc in "$SRC_DIR/service"/* "$SRC_DIR/services"/*; do
     rm -rf "$INSTALL_DIR/service/$name"
     cp -a "$svc" "$INSTALL_DIR/service/$name"
     find "$INSTALL_DIR/service/$name" -type f -name run -exec chmod +x {} \; 2>/dev/null || true
+    find "$INSTALL_DIR/service/$name" -name down -exec rm -f {} \; 2>/dev/null || true
 done
 
 # 5. Restore device-local files and drop stale flat-file leftovers.
@@ -123,25 +138,29 @@ fi
 ln -sf "$INSTALL_DIR/service/dbus-pump" /service/
 
 # 6a. Ensure boot persistence: /service is tmpfs, so rc.local recreates the
-#     symlink on every boot. Idempotent — only appends when block missing.
+#     symlink on every boot. The block is rewritten on every update so fixes
+#     reach devices that already carry an older block (marker-delimited).
+#     `rm -rf` before `ln -sf`: if anything recreated a real directory at
+#     /service/dbus-pump, ln -sf would fail silently onto it and stale code
+#     would keep running.
 RC_LOCAL="/data/rc.local"
 if [ ! -f "$RC_LOCAL" ]; then
     printf '#!/bin/sh\n' > "$RC_LOCAL"
     chmod +x "$RC_LOCAL"
 fi
-if ! grep -q "dbus-pump/service/dbus-pump" "$RC_LOCAL"; then
-    cat >> "$RC_LOCAL" << 'RCEOF'
+sed -i '/# === dbus-pump service persistence ===/,/# === end dbus-pump ===/d' "$RC_LOCAL" 2>/dev/null || true
+cat >> "$RC_LOCAL" << 'RCEOF'
 
 # === dbus-pump service persistence ===
-# Recreate /service symlink on boot (lost since /service is tmpfs)
+# Recreate /service symlink on boot (lost since /service is tmpfs).
+rm -rf /service/dbus-pump
 ln -sf /data/dbus-pump/service/dbus-pump /service/dbus-pump
 sleep 2
 svc -u /service/dbus-pump/log 2>/dev/null || true
 svc -u /service/dbus-pump 2>/dev/null || true
 # === end dbus-pump ===
 RCEOF
-    sep "added rc.local boot persistence block"
-fi
+sep "refreshed rc.local boot persistence block"
 
 # 6b. Give svscan a moment to spawn fresh supervisors for the new symlinks
 #     before we try to bring the services up, so svc -u lands on a live one.
