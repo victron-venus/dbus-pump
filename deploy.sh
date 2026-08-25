@@ -50,18 +50,30 @@ tar \
     -czf - -C "$SCRIPT_DIR" . \
     | ssh "$SSH_HOST" "set -e; rm -rf $DEPLOY_DIR; mkdir -p $DEPLOY_DIR; \
         tar -xz -C $DEPLOY_DIR --strip-components=1; \
+        rm -f /run/dbus-pump/heartbeat; \
         PUSH_LOCAL_CONFIG=1 sh $DEPLOY_DIR/update.sh; \
         waited=0; while [ \$waited -lt 15 ] && ! [ -f /run/dbus-pump/heartbeat ]; do sleep 1; waited=\$((waited + 1)); done; \
         rm -rf $DEPLOY_DIR"
 
 # Wait for supervise to bring the service back up (svc -u is async)
 echo ">>> Service status:"
+STATUS=""
 for i in $(seq 1 15); do
     sleep 1
-    STATUS="$(ssh "$SSH_HOST" "svstat /service/dbus-pump 2>&1")" \
-        && printf '%s\n' "$STATUS" && break
-    [[ "$i" == "15" ]] && echo "$STATUS" && exit 1
+    if STATUS="$(ssh "$SSH_HOST" "svstat /service/dbus-pump 2>&1")"; then
+        printf '%s\n' "$STATUS"
+        break
+    fi
 done
+[ "$i" == "15" ] && echo "svstat failed: $STATUS" && exit 1
+
+# The service dir must be a symlink into the install tree. A real directory
+# here means stale code got resurrected (legacy /opt copy or boot-order race)
+# and will keep running no matter what update.sh installs elsewhere.
+if ! ssh "$SSH_HOST" "test -L /service/dbus-pump"; then
+    echo "ERROR: /service/dbus-pump is not a symlink - split-brain install" >&2
+    exit 1
+fi
 
 echo ""
 echo "$SEPARATOR"
