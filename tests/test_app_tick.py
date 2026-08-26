@@ -116,6 +116,14 @@ def test_handle_mode_manual_turns_valve(monkeypatch):
     assert app.controller.mode == 1
 
 
+def test_mode_handler_wrap_accepts_write():
+    """vedbus rejects the SetValue (leaves /Mode stale) on a falsy callback."""
+    seen = []
+    cb = main_mod._mode_handler_wrap(lambda m: seen.append(m))
+    assert cb("/Mode", 2) is True
+    assert seen == [2]
+
+
 def test_dry_run_smoke():
     """--dry-run executes one cycle without crashing off-GX."""
     rc = main_mod.main.__wrapped__() if hasattr(main_mod.main, "__wrapped__") else None
