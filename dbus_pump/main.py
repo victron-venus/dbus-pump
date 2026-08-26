@@ -21,6 +21,9 @@ def _mode_handler_wrap(handler):
 
     def cb(*args):
         handler(args[-1])
+        # vedbus rejects the write (SetValue -> 2) unless the callback is
+        # truthy, leaving /Mode at its old value.
+        return True
 
     return cb
 
