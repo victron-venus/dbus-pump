@@ -46,6 +46,7 @@ tar \
     --exclude='logs' \
     --exclude='*.egg-info' \
     --exclude='.venv' \
+    --exclude='build' \
     --exclude='.mcp.json' \
     -czf - -C "$SCRIPT_DIR" . \
     | ssh "$SSH_HOST" "set -e; rm -rf $DEPLOY_DIR; mkdir -p $DEPLOY_DIR; \
