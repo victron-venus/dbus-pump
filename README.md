@@ -133,6 +133,19 @@ falls back to `Capacity × Level`.
 
 ## Install
 
+
+Via SetupHelper PackageManager (GUI v1): drop the repo in `/data/dbus-pump`
+(must contain `version` + `setup`). Then Settings → PackageManager → install,
+or:
+
+```sh
+/data/dbus-pump/setup install
+/data/dbus-pump/setup uninstall
+```
+
+`gitHubInfo` is `victron-venus:latest`. Device-local `local_config.py` is not overwritten.
+
+
 ```sh
 ./deploy.sh          # streams repo to Cerbo, runs update.sh there
 ./restart.sh         # restart the service only
