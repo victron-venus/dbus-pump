@@ -22,7 +22,7 @@ INSTALL_DIR="${1:-/data/dbus-pump}"
 LOCAL_ONLY="local_config.py"
 
 # Runtime items shipped at the repo root and installed at INSTALL_DIR root.
-RUNTIME_ITEMS="dbus_pump version"
+RUNTIME_ITEMS="dbus_pump version setup gitHubInfo local_config.example.py"
 
 # Flat-file leftovers that must never survive an update (we run `python3 -m
 # dbus_pump`; a stale root main.py would shadow the package).
