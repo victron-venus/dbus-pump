@@ -29,6 +29,25 @@ jobs:
       run-type-check: false
       coverage-threshold: 60
 
+  locked-tests:
+    name: Locked dependency tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v6.2.0
+        with:
+          python-version: '3.11'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      # Install dependency wheels only; test the checked-out source without build hooks.
+      # The existing reusable job separately validates editable project installation.
+      - name: Install locked development dependencies
+        run: uv sync --locked --extra dev --no-build --no-install-project
+      - name: Test with existing coverage threshold
+        run: .venv/bin/python -m pytest tests/ --cov=dbus_pump --cov-report=xml --cov-fail-under=60
+
   validate-secrets-template:
     name: Validate secrets template
     runs-on: ubuntu-latest
