@@ -41,10 +41,12 @@ jobs:
           python-version: '3.11'
       - name: Set up uv
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      # Install dependency wheels only; test the checked-out source without build hooks.
+      # The existing reusable job separately validates editable project installation.
       - name: Install locked development dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --locked --extra dev --no-build --no-install-project
       - name: Test with existing coverage threshold
-        run: uv run --locked --extra dev pytest tests/ --cov=dbus_pump --cov-report=xml --cov-fail-under=60
+        run: .venv/bin/python -m pytest tests/ --cov=dbus_pump --cov-report=xml --cov-fail-under=60
 
   validate-secrets-template:
     name: Validate secrets template
