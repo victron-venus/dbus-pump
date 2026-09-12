@@ -210,7 +210,7 @@ Use the canonical `/data/dbus-pump` directory. Both `setup install`
 A release is staged under volatile `/tmp` before stopping the service, so
 reinstalling from the installed tree does not delete the update source.
 The updater preserves `local_config.py`; `deploy.sh` deliberately replaces it
-when the workstation has a local copy (`PUSH_LOCAL_`local_config.py`=1`).
+when the workstation has a local copy (`PUSH_LOCAL_CONFIG=1`).
 
 Service definitions persist under `/data/dbus-pump/service/dbus-pump`.
 `/service/dbus-pump` is a symlink recreated by `/data/rc.local`, including
