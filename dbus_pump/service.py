@@ -18,7 +18,7 @@ try:
     import sys
 
     sys.path.insert(0, "/opt/victronenergy/dbus-systemcalc-py/ext/velib_python")
-    import dbus  # noqa: F401
+    import dbus
     from vedbus import VeDbusService
 
     VEDBUS_AVAILABLE = True
