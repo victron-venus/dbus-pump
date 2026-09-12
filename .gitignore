@@ -11,3 +11,8 @@ htmlcov/
 .ruff_cache/
 dbus_pump.egg-info/
 *.backup
+
+# Local validation and candidate packaging
+.venv-ci/
+release-dist/
+bandit-results.json
