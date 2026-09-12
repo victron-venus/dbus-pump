@@ -3,6 +3,7 @@
 import logging
 import queue
 import threading
+import time
 
 logger = logging.getLogger("dbus-pump")
 
@@ -10,10 +11,11 @@ logger = logging.getLogger("dbus-pump")
 class HaWorker:
     """One network worker; dispatch all completion callbacks to the main loop."""
 
-    def __init__(self, client, dispatch, shutdown_entity, queue_size=8):
+    def __init__(self, client, dispatch, shutdown_entity, queue_size=8, clock=time.monotonic):
         self.client = client
         self.dispatch = dispatch
         self.shutdown_entity = shutdown_entity
+        self._clock = clock
         self._queue = queue.Queue(maxsize=queue_size)
         self._stopping = threading.Event()
         # Only the main loop reads/writes _poll_pending.
@@ -80,9 +82,12 @@ class HaWorker:
                 failed = False
                 result = None
                 try:
+                    started_at = self._clock()
                     result = (
                         self.client.poll() if kind == "poll" else self.client.call_service(*args)
                     )
+                    if kind == "poll":
+                        result = dict(result, _sample_started_at=started_at)
                 except Exception:
                     failed = True
                     logger.exception("HA worker request failed")

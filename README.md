@@ -279,3 +279,24 @@ previous release with its `update.sh`, keeping the device-local configuration.
 Installer regressions cover repeated updates with live directory handles,
 supervisor-state and ownership preservation, atomic run-script replacement,
 configuration, safe rejection before stopping, and boot hooks before `exit 0`.
+
+### Invalid sensor readings
+
+An unavailable, missing or non-finite HA level does not refresh the existing
+sensor deadline. AUTO holds its previous decision within that grace window,
+then requests the existing stale-sensor valve closure at
+`SENSOR_STALE_TIMEOUT` (120 seconds by default). Manual ON/OFF modes retain their
+existing priority. A subsequent valid level resumes normal hysteresis without
+changing the configured thresholds or timings.
+The worker carries the monotonic request start time through callback delivery;
+a delayed result cannot renew sensor freshness. Main-loop ticks continue to
+write the heartbeat while a request is blocked.
+
+Unknown level and expired tank data publish unavailable `/Level` and
+`/Remaining`; unavailable volume is not represented as a measured empty tank.
+Non-finite raw height is ignored, allowing the existing capacity/level
+calculation when a valid level is present. Malformed JSON objects are handled
+as failed polls instead of escaping the worker callback. Deterministic local
+tests cover valid-to-unavailable transitions, NaN/infinity, the original stale
+deadline, manual modes, volume invalidation and recovery. HA success still does
+not independently prove freshness of the physical sensor or valve actuation.

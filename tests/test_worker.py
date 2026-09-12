@@ -94,7 +94,12 @@ def running_app(monkeypatch):
     client = BlockingClient()
     app.client = client
     loop = MainLoop()
-    app.worker = HaWorker(client, loop.dispatch, config.HA_VALVE_SWITCH_ENTITY)
+
+    def clock():
+        """Resolve the clock after an individual test monkeypatches it."""
+        return main_mod._now()
+
+    app.worker = HaWorker(client, loop.dispatch, config.HA_VALVE_SWITCH_ENTITY, clock=clock)
     try:
         yield app, client, loop
     finally:
@@ -170,6 +175,35 @@ def test_stale_data_expires_and_stale_close_is_queued_during_blocked_poll(runnin
     loop.run_one()
     loop.run_one()
     assert any(c[1] == "turn_off" for c in client.calls)
+
+
+@pytest.mark.parametrize("delay", [5.0, 10.0])
+def test_delayed_poll_retains_acquisition_deadline_and_heartbeat(running, monkeypatch, delay):
+    app, client, loop = running
+    clock = [1000.0]
+    heartbeats = []
+    monkeypatch.setattr(main_mod, "_now", lambda: clock[0])
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: heartbeats.append(clock[0]))
+    monkeypatch.setattr(config, "SENSOR_STALE_TIMEOUT", 10.0)
+    app.controller._clock = lambda: clock[0]
+    app.controller.sensor_stale_timeout = 10.0
+    app.controller._last_transition = 0.0
+    app.enable_control = True
+    app.apply_snapshot(dict(BASE, level=90.0, valve=False))
+    client.snapshot = dict(BASE, level=80.0, valve=False)
+    app.tick()
+    assert client.started.wait(2)
+    clock[0] += delay
+    app.tick()
+    assert heartbeats[-1] == clock[0]
+    client.release.set()
+    loop.run_one()
+    assert app.last_ok_time == 1000.0
+    assert app.controller.last_level_time == 1000.0
+    assert app.services.tank["/Level"] == (80.0 if delay < 10 else None)
+    clock[0] = 1010.0
+    app.tick()
+    assert app.services.tank["/Connected"] == 0
 
 
 def test_manual_off_cancels_queued_automatic_open(running):

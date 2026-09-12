@@ -6,6 +6,7 @@ Pump has no auto rules; it is driven by manual /Mode writes only.
 """
 
 import logging
+import math
 import time
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,8 @@ MODE_OFF = 2
 
 
 class ValveController:
+    """Apply manual modes and hysteresis within a monotonic sensor deadline."""
+
     def __init__(
         self,
         start_value: float,
@@ -43,7 +46,9 @@ class ValveController:
         if mode in (MODE_AUTO, MODE_ON, MODE_OFF):
             self.mode = mode
 
-    def update(self, level: float | None, fresh: bool) -> tuple[bool, str]:
+    def update(
+        self, level: float | None, fresh: bool, sampled_at: float | None = None
+    ) -> tuple[bool, str]:
         """Feed latest level reading.
 
         Returns (desired_valve_state, reason) where reason is one of:
@@ -51,8 +56,11 @@ class ValveController:
         'hold' (no change).
         """
         now = self._clock()
-        if fresh and level is not None:
-            self.last_level_time = now
+        sampled_at = now if sampled_at is None else sampled_at
+        if level is not None and not math.isfinite(level):
+            level = None
+        if fresh and level is not None and 0 <= now - sampled_at < self.sensor_stale_timeout:
+            self.last_level_time = sampled_at
         stale = (
             self.last_level_time is None or now - self.last_level_time >= self.sensor_stale_timeout
         )
@@ -66,12 +74,12 @@ class ValveController:
         if stale:
             return False, "stale-close"
 
-        assert level is not None
-        if level <= self.start_value:
+        if level is not None and level <= self.start_value:
             target, why = True, "auto-open"
-        elif level >= self.stop_value:
+        elif level is not None and level >= self.stop_value:
             target, why = False, "auto-close"
         else:
+            # Missing readings hold without refreshing the existing deadline.
             return self._desired, "hold"
 
         # Anti-chatter: never flip faster than min_switch_interval.

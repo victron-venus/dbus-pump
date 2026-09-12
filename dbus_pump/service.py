@@ -57,8 +57,6 @@ def _make_service(service_name: str):
     if VEDBUS_AVAILABLE:
         # One private connection per service: VeDbusService exports at '/',
         # and a single connection can register that object path only once.
-        import dbus
-
         return VeDbusService(service_name, bus=dbus.SystemBus(private=True))
     return NullDbusService(service_name)
 
@@ -129,7 +127,7 @@ class WaterSystemServices:
         self.tank["/Level"] = round(level_pct, 1) if level_pct is not None else None
         if remaining_m3 is None and level_pct is not None:
             remaining_m3 = self.capacity_m3 * (level_pct / 100.0)
-        self.tank["/Remaining"] = round(remaining_m3 if remaining_m3 is not None else 0.0, 3)
+        self.tank["/Remaining"] = round(remaining_m3, 3) if remaining_m3 is not None else None
         self.tank["/Status"] = 0 if level_pct is not None else 4  # 4 = unknown sensor
 
     def set_connected(self, connected: bool) -> None:
