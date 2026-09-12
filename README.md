@@ -177,6 +177,30 @@ If the GX's native *Pump start/stop* relay feature is enabled it owns
 default so both can coexist; disable the native feature (Settings → Relay)
 if you want full GX-side pump semantics.
 
+## D-Bus responsiveness and HA requests
+
+One background worker performs HA HTTP requests, using the existing request
+timeout and circuit breaker. Polls never overlap, and a slow poll does not
+block D-Bus reads. Results and device-state changes are applied on the GLib
+main loop. While a poll is outstanding, the main loop still expires stale
+sensor data and evaluates the existing valve fail-safe.
+
+Manual and automatic switch requests use the same worker. The queue holds at
+most eight operations; a full queue rejects a new `/Mode` write instead of
+blocking D-Bus. An accepted `/Mode` means the request was queued; `/State`
+changes only after HA acknowledges it. New commands supersede older queued
+commands for the same switch. A request already sent to HA cannot be cancelled,
+so an opposite safety decision is queued after it and retried if necessary.
+Returning to AUTO re-evaluates the cached sample without making it fresh when
+automation is enabled. Monitoring-only operation still does not make automatic
+switch decisions.
+
+Shutdown discards pending work, finishes the active request, then attempts the
+existing valve-close action on the same worker and closes the HTTP session.
+The shutdown wait is bounded to 15 seconds; an exceeded deadline is logged as
+an unconfirmed valve closure. Power loss and an unreachable HA remain the
+same limits on software-controlled valve closure.
+
 ## Troubleshooting
 
 - **Tank shows fault / level frozen**: HA unreachable or sensor stale. The

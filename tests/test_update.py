@@ -9,7 +9,8 @@ from pathlib import Path
 
 def test_setuphelper_in_place_update_preserves_config_and_boot(tmp_path):
     repo = Path(__file__).resolve().parents[1]
-    name = repo.name
+    # Checkout/worktree directory names do not change the canonical GX service.
+    name = "dbus-pump"
     root = tmp_path / "venus"
     install = root / "data" / name
     install.mkdir(parents=True)
