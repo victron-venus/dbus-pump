@@ -265,8 +265,11 @@ def build_app() -> App:
         capacity_m3=config.TANK_CAPACITY_LITERS / 1000.0,
         on_pump_mode=_mode_handler_wrap(lambda m: app.handle_mode("pump", int(m))),
         on_valve_mode=_mode_handler_wrap(lambda m: app.handle_mode("valve", int(m))),
+        register=False,
     )
     app = App(client, controller, services, enable_control=config.control_enabled())
+    services.set_connected(False)
+    services.register()
     if not app.enable_control:
         logger.warning(
             "Automation DISABLED (ENABLE_CONTROL=False or token unset) - "

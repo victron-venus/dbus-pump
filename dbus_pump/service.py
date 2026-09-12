@@ -57,7 +57,7 @@ def _make_service(service_name: str):
     if VEDBUS_AVAILABLE:
         # One private connection per service: VeDbusService exports at '/',
         # and a single connection can register that object path only once.
-        return VeDbusService(service_name, bus=dbus.SystemBus(private=True))
+        return VeDbusService(service_name, bus=dbus.SystemBus(private=True), register=False)
     return NullDbusService(service_name)
 
 
@@ -92,7 +92,9 @@ class WaterSystemServices:
         on_pump_mode=None,
         on_valve_mode=None,
         capacity_m3: float = 0.0,
+        register: bool = True,
     ) -> None:
+        self._registered = False
         # D-Bus bus names forbid a digit directly after a dot, so the device
         # instance goes into /DeviceInstance only; the name suffix is text.
         tank_bus_name = f"com.victronenergy.tank.ha_tank{tank_instance}"
@@ -119,6 +121,17 @@ class WaterSystemServices:
 
         self.pump = _make_pump("Water pump", pump_startstop_instance, on_pump_mode)
         self.valve = _make_pump("City water valve", valve_startstop_instance, on_valve_mode)
+
+        if register:
+            self.register()
+
+    def register(self) -> None:
+        """Publish the complete service group after callers finish setup."""
+        if not self._registered:
+            if VEDBUS_AVAILABLE:
+                for service in (self.tank, self.pump, self.valve):
+                    service.register()
+            self._registered = True
 
     # --- updates -------------------------------------------------------------
     def update_tank_level(self, level_pct: float | None, remaining_m3: float | None = None) -> None:
