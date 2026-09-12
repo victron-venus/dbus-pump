@@ -31,7 +31,7 @@ class HomeAssistantError(Exception):
 
 
 class HomeAssistantAPIError(HomeAssistantError):
-    pass
+    """The HA API returned an unsuccessful response."""
 
 
 class CircuitBreaker:
@@ -86,6 +86,8 @@ def state_is_on(state: Any) -> bool | None:
 
 
 class HaClient:
+    """Read batched HA state and send switch actions through one session."""
+
     def __init__(
         self,
         base_url: str,
@@ -125,6 +127,10 @@ class HaClient:
         if now - self._last_error_log >= 60.0:
             self._last_error_log = now
             logger.error(msg)
+
+    def close(self) -> None:
+        """Release the HTTP session after the network worker has stopped."""
+        self._session.close()
 
     def poll(self) -> dict[str, Any]:
         """Fetch level/pump/valve states.

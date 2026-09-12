@@ -12,6 +12,7 @@ from dbus_pump import config
 from dbus_pump.control import MODE_OFF, MODE_ON, ValveController
 from dbus_pump.ha_client import HaClient
 from dbus_pump.service import VEDBUS_AVAILABLE, WaterSystemServices
+from dbus_pump.worker import HaWorker
 
 logger = logging.getLogger("dbus-pump")
 
@@ -20,15 +21,17 @@ def _mode_handler_wrap(handler):
     """Vedbus onchange signatures vary across versions; take the last arg."""
 
     def cb(*args):
-        handler(args[-1])
+        accepted = handler(args[-1])
         # vedbus rejects the write (SetValue -> 2) unless the callback is
         # truthy, leaving /Mode at its old value.
-        return True
+        return accepted is not False
 
     return cb
 
 
 class App:
+    """Apply HA snapshots and control decisions on the D-Bus main loop."""
+
     def __init__(
         self,
         client: HaClient,
@@ -43,21 +46,53 @@ class App:
         self.last_ok_time: float | None = None
         self._last_commanded_valve: bool | None = None
         self.loop_interval_ms = max(250, int(config.POLL_INTERVAL * 1000))
+        self.worker: HaWorker | None = None
+        self._last_snapshot = {"level": None, "pump": None, "valve": None, "ok": False}
+        self._valve_reconcile_required = False
 
     # --- GX -> HA manual mode writes ----------------------------------------
-    def handle_mode(self, which: str, mode: int) -> None:
+    def handle_mode(self, which: str, mode: int) -> bool:
         entity = config.HA_VALVE_SWITCH_ENTITY if which == "valve" else config.HA_PUMP_SWITCH_ENTITY
         logger.info("%s /Mode changed to %s", which, mode)
-        if which == "valve":
-            self.controller.set_mode(mode)
         action = {MODE_ON: ("turn_on", True), MODE_OFF: ("turn_off", False)}.get(mode)
         if action:
             act, state = action
-            if self.client.call_service("switch", act, entity):
+            compensating = (
+                which == "valve"
+                and self.worker is not None
+                and self.worker.service_pending(entity, "turn_off" if state else "turn_on")
+            )
+
+            def completed(ok):
+                if not ok:
+                    if compensating and self.enable_control:
+                        self._valve_reconcile_required = True
+                    return
                 self.services.update_device_state(which, state)
                 self._last_commanded_valve = (
                     state if which == "valve" else self._last_commanded_valve
                 )
+                if which == "valve":
+                    self._valve_reconcile_required = False
+
+            if not self._request_service(act, entity, completed):
+                return False
+        if which == "valve":
+            self.controller.set_mode(mode)
+            if not action and self.worker is not None and self.enable_control:
+                # Re-evaluate AUTO against the existing sample without making
+                # it fresh. This also compensates an in-flight manual ON when
+                # the automatic policy now requires OFF.
+                self.apply_snapshot(dict(self._last_snapshot, ok=False))
+        return True
+
+    def _request_service(self, action, entity, callback, deduplicate=False):
+        if self.worker is not None:
+            if deduplicate and self.worker.service_pending(entity, action):
+                return True
+            return self.worker.call_service("switch", action, entity, callback)
+        callback(self.client.call_service("switch", action, entity))
+        return True
 
     def shutdown(self) -> None:
         """Fail-safe: force the city-water valve CLOSED before exiting (Q5).
@@ -65,6 +100,9 @@ class App:
         Best effort — a dead HA or open breaker still leaves the valve as-is;
         residual risk of Cerbo power loss is documented in the README.
         """
+        if self.worker is not None:
+            self.worker.stop()
+            return
         try:
             entity = config.HA_VALVE_SWITCH_ENTITY
             if self.client.call_service("switch", "turn_off", entity):
@@ -74,7 +112,22 @@ class App:
 
     # --- main cycle ----------------------------------------------------------
     def tick(self) -> bool:
+        if self.worker is not None:
+            # A slow request must not freeze Connected or postpone the valve's
+            # existing stale-sensor fail-safe. No old sample becomes fresh.
+            if (
+                self.last_ok_time is None
+                or _now() - self.last_ok_time >= config.SENSOR_STALE_TIMEOUT
+            ):
+                self.apply_snapshot(dict(self._last_snapshot, ok=False))
+            self.worker.poll(self.apply_snapshot)
+            return True
         snapshot = self.client.poll()
+        return self.apply_snapshot(snapshot)
+
+    def apply_snapshot(self, snapshot) -> bool:
+        """Apply HA results on the D-Bus main loop (also used by dry-run)."""
+        self._last_snapshot = dict(snapshot)
         now_ok = snapshot["ok"]
         if now_ok:
             self.last_ok_time = _now()
@@ -99,25 +152,41 @@ class App:
         if self.enable_control:
             fresh = now_ok and snapshot["level"] is not None
             desired, why = self.controller.update(snapshot["level"], fresh)
+            entity = config.HA_VALVE_SWITCH_ENTITY
+            opposite = "turn_off" if desired else "turn_on"
+            superseded = self.worker is not None and self.worker.service_pending(entity, opposite)
+            if superseded:
+                self.worker.cancel_service(entity)
+                self._valve_reconcile_required = True
             # Only command when the best-known actual state differs; avoids
             # spurious writes on startup / in the hysteresis hold band.
             known = (
                 snapshot["valve"] if snapshot["valve"] is not None else self._last_commanded_valve
             )
-            if desired != known:
-                if known is None:
+            if desired != known or self._valve_reconcile_required:
+                if known is None and not self._valve_reconcile_required:
                     logger.debug(
                         "Valve %s wanted (%s) but HA state unknown - not commanding blindly",
                         "ON" if desired else "OFF",
                         why,
                     )
                 else:
-                    entity = config.HA_VALVE_SWITCH_ENTITY
                     act = "turn_on" if desired else "turn_off"
                     logger.info("Valve %s (%s)", "ON" if desired else "OFF", why)
-                    if self.client.call_service("switch", act, entity):
-                        self._last_commanded_valve = desired
-                        self.services.update_device_state("valve", desired)
+
+                    # A cancelled request might already be in flight. Queue
+                    # its opposite even if the older sample appears to match.
+                    compensating = self._valve_reconcile_required
+
+                    def completed(ok):
+                        if ok:
+                            self._last_commanded_valve = desired
+                            self.services.update_device_state("valve", desired)
+                        elif compensating:
+                            self._valve_reconcile_required = True
+
+                    if self._request_service(act, entity, completed, deduplicate=True):
+                        self._valve_reconcile_required = False
         elif snapshot.get("valve") is not None:
             self._last_commanded_valve = snapshot["valve"]
 
@@ -152,7 +221,7 @@ def _tank_remaining_m3(water_cm: float | None, offset_cm: float, radius_cm: floa
 def _write_heartbeat() -> None:
     try:
         os.makedirs(os.path.dirname(config.HEARTBEAT_FILE), exist_ok=True)
-        with open(config.HEARTBEAT_FILE, "w") as f:
+        with open(config.HEARTBEAT_FILE, "w", encoding="utf-8") as f:
             f.write(str(int(time.time())))
     except OSError as exc:  # /run may be read-only off-device
         logger.debug("heartbeat write failed: %s", exc)
@@ -201,20 +270,25 @@ def build_app() -> App:
 
 
 def serve(app: App) -> None:
-    from gi.repository import GLib  # provided by Venus OS python env
+    # Venus-only dependency: keep dry-run and tests usable off-device.
+    from gi.repository import GLib  # pylint: disable=import-outside-toplevel
 
-    GLib.timeout_add(app.loop_interval_ms, app.tick)
+    app.worker = HaWorker(app.client, GLib.idle_add, config.HA_VALVE_SWITCH_ENTITY)
+    timer = GLib.timeout_add(app.loop_interval_ms, app.tick)
     mainloop = GLib.MainLoop()
 
     def _stop(*_args):
         logger.info("Shutting down")
-        app.shutdown()
         mainloop.quit()
 
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
     logger.info("dbus-pump %s started (control=%s)", config.SOFTWARE_VERSION, app.enable_control)
-    mainloop.run()
+    try:
+        mainloop.run()
+    finally:
+        GLib.source_remove(timer)
+        app.shutdown()
 
 
 def main() -> int:
@@ -242,7 +316,7 @@ def main() -> int:
     if not VEDBUS_AVAILABLE:
         logger.error("vedbus/dbus not available - run on the Cerbo GX")
         return 1
-    from dbus.mainloop.glib import DBusGMainLoop
+    from dbus.mainloop.glib import DBusGMainLoop  # pylint: disable=import-outside-toplevel
 
     # Must run before any VeDbusService is created (services export onto the
     # default main loop).

@@ -177,6 +177,30 @@ If the GX's native *Pump start/stop* relay feature is enabled it owns
 default so both can coexist; disable the native feature (Settings → Relay)
 if you want full GX-side pump semantics.
 
+## D-Bus responsiveness and HA requests
+
+One background worker performs HA HTTP requests, using the existing request
+timeout and circuit breaker. Polls never overlap, and a slow poll does not
+block D-Bus reads. Results and device-state changes are applied on the GLib
+main loop. While a poll is outstanding, the main loop still expires stale
+sensor data and evaluates the existing valve fail-safe.
+
+Manual and automatic switch requests use the same worker. The queue holds at
+most eight operations; a full queue rejects a new `/Mode` write instead of
+blocking D-Bus. An accepted `/Mode` means the request was queued; `/State`
+changes only after HA acknowledges it. New commands supersede older queued
+commands for the same switch. A request already sent to HA cannot be cancelled,
+so an opposite safety decision is queued after it and retried if necessary.
+Returning to AUTO re-evaluates the cached sample without making it fresh when
+automation is enabled. Monitoring-only operation still does not make automatic
+switch decisions.
+
+Shutdown discards pending work, finishes the active request, then attempts the
+existing valve-close action on the same worker and closes the HTTP session.
+The shutdown wait is bounded to 15 seconds; an exceeded deadline is logged as
+an unconfirmed valve closure. Power loss and an unreachable HA remain the
+same limits on software-controlled valve closure.
+
 ## Troubleshooting
 
 - **Tank shows fault / level frozen**: HA unreachable or sensor stale. The
@@ -201,3 +225,57 @@ Tests run fully off-GX (D-Bus and HA are mocked).
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+## Venus OS installation and recovery
+
+Use the canonical `/data/dbus-pump` directory. Both `setup install`
+(SetupHelper/PackageManager) and the workstation `deploy.sh` call `update.sh`.
+A release is staged under volatile `/tmp` before stopping the service, so
+reinstalling from the installed tree does not delete the update source.
+The updater preserves `local_config.py`; `deploy.sh` deliberately replaces it
+when the workstation has a local copy (`PUSH_LOCAL_CONFIG=1`).
+Existing service and log directory inodes, ownership, supervisor state and the
+canonical `/service` symlink are preserved. Only the application is stopped;
+run scripts are replaced atomically and a healthy logger keeps running.
+Ordinary updates do not restart PackageManager. A stuck application receives
+one supervisor-scoped kill after twenty seconds; installation aborts if it is
+still running after twenty-five seconds. Unexpected service links, real `/service`
+directories or legacy firmware copies require a separate migration before
+updating; the updater leaves them untouched.
+
+Service definitions persist under `/data/dbus-pump/service/dbus-pump`.
+`/service/dbus-pump` is a symlink recreated by `/data/rc.local`, including
+when that script already ends with `exit 0`. The logger recreates its volatile
+`/var/log/dbus-pump` directory and rotates four 25 KB files. Heartbeats
+also live on volatile storage. Runtime data does not require writes to the
+read-only firmware filesystem. Firmware updates can replace system Python
+packages; check dependencies after each update before assuming the service is
+healthy. The installer does not run `pip` or upgrade system packages.
+
+Before installation, check the target interpreter:
+
+```sh
+python3 --version
+python3 -c "import requests, dbus; from gi.repository import GLib"
+```
+
+Verify a running process and its D-Bus data after installation:
+
+```sh
+svstat /service/dbus-pump /service/dbus-pump/log
+readlink /service/dbus-pump
+tail -n 40 /var/log/dbus-pump/current
+```
+
+`update.sh` confirms termination before copying but does not wait for a fresh
+process or heartbeat after requesting startup. The deployment caller must
+verify startup and D-Bus availability.
+
+`deploy.sh` fails if a fresh heartbeat does not appear within 60 seconds or the
+service never reaches `up`. A heartbeat proves the loop is running, not that
+Home Assistant is reachable: also inspect `/Connected` and the log. Restore a
+previous release with its `update.sh`, keeping the device-local configuration.
+Installer regressions cover repeated updates with live directory handles,
+supervisor-state and ownership preservation, atomic run-script replacement,
+configuration, safe rejection before stopping, and boot hooks before `exit 0`.
