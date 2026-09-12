@@ -74,7 +74,7 @@ class BlockingClient:
                 assert self.release_open.wait(3), "test did not release the valve ON request"
             result = self.service_results.pop(0) if self.service_results else True
             if isinstance(result, Exception):
-                raise RuntimeError(str(result))
+                raise result  # pylint: disable=raising-bad-type
             return result
         finally:
             self.active -= 1
