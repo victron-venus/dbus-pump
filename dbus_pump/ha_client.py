@@ -7,6 +7,7 @@ guarded by a circuit breaker (pattern copied from inverter-control).
 
 import json
 import logging
+import math
 import time
 from typing import Any
 
@@ -156,15 +157,21 @@ class HaClient:
             if resp.status_code != 200:
                 raise HomeAssistantAPIError(f"/api/template HTTP {resp.status_code}")
             data = json.loads(resp.text)
+            if not isinstance(data, dict):
+                raise HomeAssistantAPIError("HA template response must be a JSON object")
             level_raw = str(data.get("level", "")).strip()
             try:
                 level: float | None = float(level_raw)
             except ValueError:
                 level = None
+            if level is not None and not math.isfinite(level):
+                level = None
             cm_raw = str(data.get("cm", "")).strip()
             try:
                 water_cm: float | None = float(cm_raw)
             except ValueError:
+                water_cm = None
+            if water_cm is not None and not math.isfinite(water_cm):
                 water_cm = None
             result.update(
                 level=level,

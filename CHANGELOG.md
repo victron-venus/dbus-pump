@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2
+
+- Preserve request-start monotonic freshness so delayed replies cannot renew expired telemetry.
+
+- Handle missing sensor values without interrupting the main-loop callback.
+- Reject non-finite level/height and malformed HA template responses.
+- Keep the existing monotonic stale-sensor deadline and manual mode priority; invalid measurements cannot refresh the deadline.
+- Publish unavailable remaining volume for unknown or expired level instead of a false empty-tank value.
+- Cover invalidity, the original stale-close timing, recovery, and installer tests from arbitrarily named worktrees.
+
 ## [Unreleased]
 
 ### Added

@@ -121,16 +121,20 @@ class App:
             ):
                 self.apply_snapshot(dict(self._last_snapshot, ok=False))
             self.worker.poll(self.apply_snapshot)
+            _write_heartbeat()
             return True
+        started_at = _now()
         snapshot = self.client.poll()
-        return self.apply_snapshot(snapshot)
+        return self.apply_snapshot(dict(snapshot, _sample_started_at=started_at))
 
     def apply_snapshot(self, snapshot) -> bool:
         """Apply HA results on the D-Bus main loop (also used by dry-run)."""
         self._last_snapshot = dict(snapshot)
-        now_ok = snapshot["ok"]
+        now = _now()
+        started_at = snapshot.get("_sample_started_at", now)
+        now_ok = snapshot["ok"] and 0 <= now - started_at < config.SENSOR_STALE_TIMEOUT
         if now_ok:
-            self.last_ok_time = _now()
+            self.last_ok_time = started_at
         ha_reachable = (
             self.last_ok_time is not None
             and (_now() - self.last_ok_time) < config.SENSOR_STALE_TIMEOUT
@@ -142,7 +146,9 @@ class App:
         self.services.update_tank_level(
             level,
             remaining_m3=_tank_remaining_m3(
-                snapshot.get("cm"), config.TANK_OFFSET_CM, config.TANK_RADIUS_CM
+                snapshot.get("cm") if level is not None else None,
+                config.TANK_OFFSET_CM,
+                config.TANK_RADIUS_CM,
             ),
         )
 
@@ -151,7 +157,7 @@ class App:
 
         if self.enable_control:
             fresh = now_ok and snapshot["level"] is not None
-            desired, why = self.controller.update(snapshot["level"], fresh)
+            desired, why = self.controller.update(snapshot["level"], fresh, sampled_at=started_at)
             entity = config.HA_VALVE_SWITCH_ENTITY
             opposite = "turn_off" if desired else "turn_on"
             superseded = self.worker is not None and self.worker.service_pending(entity, opposite)
