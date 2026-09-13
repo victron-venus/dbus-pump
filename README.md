@@ -94,6 +94,12 @@ sequenceDiagram
     Note over DP: MIN_SWITCH_INTERVAL anti-chatter<br/>between transitions
 ```
 
+<!-- ci-release-process:start -->
+## Release process
+
+See the [release strategy](RELEASING.md) for validation, nightly, beta, RC and stable promotion rules, and the [operator runbook](docs/release-workflow.md) for local commands.
+<!-- ci-release-process:end -->
+
 ## Configuration
 
 Copy `local_config.example.py` to `local_config.py` on the device and fill in:
