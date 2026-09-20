@@ -17,7 +17,7 @@ jobs:
     # a step-level `uses` of a workflow_call workflow is rejected by GitHub.
     uses: victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml@553cc62049396c2b57d3ea21a480f7a69842d1a4
     with:
-      python-version: '3.11'
+      python-version: '3.12.13'
       # mypy has pre-existing errors (Venus OS imports without stubs); tracked separately
       run-type-check: false
       coverage-threshold: 60
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v6.2.0
         with:
-          python-version: '3.11'
+          python-version: '3.12.13'
       - name: Set up uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       # Install dependency wheels only; test the checked-out source without build hooks.

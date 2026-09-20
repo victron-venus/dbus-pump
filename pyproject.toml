@@ -8,7 +8,7 @@ version = "0.1.4"
 description = "Home-Assistant-backed water tank/pump/valve bridge for Victron Venus OS"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "requests>=2.31",
 ]
@@ -25,7 +25,7 @@ packages = ["dbus_pump"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 ignore = [
