@@ -2,10 +2,6 @@ name: CI
 
 on:
   workflow_call:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
 
 permissions:
   contents: read
@@ -60,3 +56,4 @@ jobs:
             exit 1
           fi
           echo "OK: local_config.example.py looks like a template"
+    timeout-minutes: 30
