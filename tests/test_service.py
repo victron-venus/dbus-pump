@@ -105,3 +105,12 @@ def test_connected_propagates_to_all():
     assert s.valve.items["/Connected"] == 0
     s.set_connected(True)
     assert s.valve.items["/Connected"] == 1
+
+
+def test_update_device_state_none_is_unknown_not_stopped():
+    """DBUSPUMP-1: unavailable/unknown HA state must not become /State=0."""
+    s = build()
+    s.update_device_state("pump", None)
+    s.update_device_state("valve", None)
+    assert s.pump.items["/State"] is None
+    assert s.valve.items["/State"] is None

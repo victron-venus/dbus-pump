@@ -151,7 +151,11 @@ class WaterSystemServices:
 
     def update_device_state(self, which: str, running: bool | None) -> None:
         svc = self.pump if which == "pump" else self.valve
-        svc["/State"] = 1 if running else 0
+        # None = HA unavailable/unknown — do not publish as stopped (0).
+        if running is None:
+            svc["/State"] = None
+        else:
+            svc["/State"] = 1 if running else 0
 
     def set_mode_quietly(self, which: str, mode: int) -> None:
         """Set /Mode without re-triggering the onchange handler loop."""
