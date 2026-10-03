@@ -79,6 +79,16 @@ def test_device_state_update():
     assert s.valve.items["/State"] == 0
 
 
+def test_initial_device_states_are_unknown_until_first_snapshot():
+    s = build()
+    assert s.pump.items["/State"] is None
+    assert s.valve.items["/State"] is None
+    s.update_device_state("pump", True)
+    s.update_device_state("valve", False)
+    assert s.pump.items["/State"] == 1
+    assert s.valve.items["/State"] == 0
+
+
 def test_null_service_onchange_fires():
     seen = []
     svc = NullDbusService("test")
@@ -105,3 +115,12 @@ def test_connected_propagates_to_all():
     assert s.valve.items["/Connected"] == 0
     s.set_connected(True)
     assert s.valve.items["/Connected"] == 1
+
+
+def test_update_device_state_none_is_unknown_not_stopped():
+    """DBUSPUMP-1: unavailable/unknown HA state must not become /State=0."""
+    s = build()
+    s.update_device_state("pump", None)
+    s.update_device_state("valve", None)
+    assert s.pump.items["/State"] is None
+    assert s.valve.items["/State"] is None

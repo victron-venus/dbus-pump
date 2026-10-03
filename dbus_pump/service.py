@@ -112,7 +112,7 @@ class WaterSystemServices:
         def _make_pump(name: str, inst: int, on_mode):
             svc = _make_service(f"com.victronenergy.pump.startstop{inst}")
             _identity_paths(svc, name, version, name, inst, "Home Assistant")
-            svc.add_path("/State", 0)  # 0 stopped, 1 running
+            svc.add_path("/State", None)  # None unknown, 0 stopped, 1 running
             # vedbus calls onchangecallback(path, value); our handlers take
             # the last arg so both signatures work.
             svc.add_path("/Mode", 0, writeable=True, onchangecallback=on_mode)
@@ -151,7 +151,11 @@ class WaterSystemServices:
 
     def update_device_state(self, which: str, running: bool | None) -> None:
         svc = self.pump if which == "pump" else self.valve
-        svc["/State"] = 1 if running else 0
+        # None = HA unavailable/unknown — do not publish as stopped (0).
+        if running is None:
+            svc["/State"] = None
+        else:
+            svc["/State"] = 1 if running else 0
 
     def set_mode_quietly(self, which: str, mode: int) -> None:
         """Set /Mode without re-triggering the onchange handler loop."""
