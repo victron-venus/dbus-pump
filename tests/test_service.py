@@ -79,6 +79,16 @@ def test_device_state_update():
     assert s.valve.items["/State"] == 0
 
 
+def test_initial_device_states_are_unknown_until_first_snapshot():
+    s = build()
+    assert s.pump.items["/State"] is None
+    assert s.valve.items["/State"] is None
+    s.update_device_state("pump", True)
+    s.update_device_state("valve", False)
+    assert s.pump.items["/State"] == 1
+    assert s.valve.items["/State"] == 0
+
+
 def test_null_service_onchange_fires():
     seen = []
     svc = NullDbusService("test")
