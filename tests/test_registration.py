@@ -72,7 +72,7 @@ def test_native_group_registers_complete_paths_once_on_private_buses(native):
     for snapshot in native.snapshots[1:]:
         assert snapshot["/ActiveTankService"] == water.tank.service_name
         assert snapshot["/Mode"] == 0
-        assert snapshot["/State"] == 0
+        assert snapshot["/State"] is None
     water.register()
     assert len(native.snapshots) == 3
 
