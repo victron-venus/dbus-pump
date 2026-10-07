@@ -28,7 +28,7 @@ fi
 LOCAL_ONLY="local_config.py"
 
 # Runtime items shipped at the repo root and installed at INSTALL_DIR root.
-RUNTIME_ITEMS="update.sh dbus_pump version setup gitHubInfo local_config.example.py"
+RUNTIME_ITEMS="update.sh boot.sh restart.sh dbus_pump version setup gitHubInfo local_config.example.py"
 
 # Flat-file leftovers that must never survive an update (we run `python3 -m
 # dbus_pump`; a stale root main.py would shadow the package).
@@ -40,8 +40,8 @@ sep() { echo "=== dbus-pump update: $*"; }
 # Provision packages separately; never modify the system Python during an update.
 PYTHONDONTWRITEBYTECODE=1 python3 - <<'PYTHON'
 import sys
-if sys.version_info < (3, 11):
-    raise SystemExit("Python 3.11 or newer is required")
+if sys.version_info[:2] != (3, 12):
+    raise SystemExit("The firmware Python 3.12 runtime is required")
 import requests, dbus
 sys.path.insert(0, "/opt/victronenergy/dbus-systemcalc-py/ext/velib_python")
 from gi.repository import GLib
@@ -69,7 +69,8 @@ cd "$STAGING_DIR"
 # Validate the owned service layout before stopping a healthy worker. Ordinary
 # updates preserve the service/log directories and their live supervisors.
 SERVICE_TARGET="$INSTALL_DIR/service/dbus-pump"
-SERVICE_LINK="/service/dbus-pump"
+SERVICE_LINK="/service/dbus-pump-ha"
+LEGACY_LINK="/service/dbus-pump"
 UNIT_SOURCE="$SRC_DIR/service/dbus-pump"
 [ -d "$UNIT_SOURCE" ] || UNIT_SOURCE="$SRC_DIR/services/dbus-pump"
 for run_file in run log/run; do
@@ -78,47 +79,43 @@ for run_file in run log/run; do
         exit 1
     fi
 done
-if [ -L "$SERVICE_LINK" ]; then
-    if [ "$(readlink "$SERVICE_LINK")" != "$SERVICE_TARGET" ]; then
-        echo "Refusing to replace an unexpected service symlink: $SERVICE_LINK" >&2
-        exit 1
-    fi
-elif [ -e "$SERVICE_LINK" ]; then
-    echo "Legacy service directory requires migration before updating: $SERVICE_LINK" >&2
-    exit 1
-fi
-for directory in "$INSTALL_DIR/service" "$SERVICE_TARGET" "$SERVICE_TARGET/log"; do
-    if [ -L "$directory" ] || { [ -e "$directory" ] && [ ! -d "$directory" ]; }; then
-        echo "Unexpected service directory layout: $directory" >&2
-        exit 1
-    fi
-done
-LEGACY_OPT="/opt/victronenergy/dbus-pump"
-if [ -e "$LEGACY_OPT" ] || [ -L "$LEGACY_OPT" ]; then
-    echo "Legacy firmware installation requires migration before updating: $LEGACY_OPT" >&2
-    exit 1
+# Preflight the release helper before any service or runtime mutation.
+sh "$SRC_DIR/boot.sh" check
+ACTIVE_LINK="$SERVICE_LINK"
+if [ ! -L "$SERVICE_LINK" ] && [ -L "$LEGACY_LINK" ] && \
+        [ "$(readlink "$LEGACY_LINK")" = "$SERVICE_TARGET" ]; then
+    ACTIVE_LINK="$LEGACY_LINK"
 fi
 
 # Stop only the application; its existing logger and supervisors stay alive.
 # Verify termination before replacing Python files. A stuck worker gets one
 # supervisor-scoped kill after twenty seconds; unrelated processes are untouched.
 stop_worker() {
-    [ -e "$SERVICE_LINK" ] || return 0
-    svc -d "$SERVICE_LINK" || return 1
+    service_path="$1"
+    [ -e "$service_path" ] || return 0
+    svc -d "$service_path" || return 1
     waited=0
     while [ "$waited" -lt 25 ]; do
-        status=$(svstat "$SERVICE_LINK" 2>/dev/null || true)
+        status=$(svstat "$service_path" 2>/dev/null || true)
         case "$status" in *": down "*) return 0 ;; esac
         if [ "$waited" -eq 20 ]; then
-            svc -k "$SERVICE_LINK" || return 1
+            svc -k "$service_path" || return 1
         fi
         sleep 1
         waited=$((waited + 1))
     done
-    echo "Service did not stop; runtime files were not changed: $SERVICE_LINK" >&2
+    echo "Service did not stop; runtime files were not changed: $service_path" >&2
     return 1
 }
-stop_worker
+# A real /service/dbus-pump belongs to firmware and is never stopped here.
+if [ -L "$ACTIVE_LINK" ]; then
+    stop_worker "$ACTIVE_LINK"
+    # Only a changed logger definition needs a restart (e.g. the migration to
+    # a private log directory). Ordinary updates keep the logger running.
+    if ! cmp -s "$SERVICE_TARGET/log/run" "$UNIT_SOURCE/log/run"; then
+        stop_worker "$ACTIVE_LINK/log"
+    fi
+fi
 
 mkdir -p "$INSTALL_DIR"
 sep "installing from $SRC_DIR into $INSTALL_DIR"
@@ -174,12 +171,6 @@ if [ "${PUSH_LOCAL_CONFIG:-0}" = "1" ] && [ -f "$SRC_DIR/local_config.py" ]; the
     sep "pushed local_config.py (PUSH_LOCAL_CONFIG=1)"
 fi
 
-# A valid existing symlink must retain its inode too. Never replace a live
-# service directory or move another service out of the way.
-if [ ! -L "$SERVICE_LINK" ]; then
-    ln -s "$SERVICE_TARGET" "$SERVICE_LINK"
-fi
-
 # Refresh the boot hook before an existing exit statement. On boot it creates
 # a missing canonical link, without deleting a directory or unexpected link.
 RC_LOCAL="/data/rc.local"
@@ -192,13 +183,7 @@ RC_BLOCK="$STAGING_DIR/rc.block"
 cat > "$RC_BLOCK" << 'RCEOF'
 
 # === dbus-pump service persistence ===
-if [ ! -e /service/dbus-pump ] && [ ! -L /service/dbus-pump ]; then
-    ln -s /data/dbus-pump/service/dbus-pump /service/dbus-pump
-fi
-if [ -L /service/dbus-pump ] && [ "$(readlink /service/dbus-pump)" = /data/dbus-pump/service/dbus-pump ]; then
-    svc -u /service/dbus-pump/log 2>/dev/null || true
-    svc -u /service/dbus-pump 2>/dev/null || true
-fi
+sh /data/dbus-pump/boot.sh
 # === end dbus-pump ===
 RCEOF
 # An existing rc.local may end in "exit 0"; boot hooks appended after it never run.
@@ -215,11 +200,8 @@ cat "$STAGING_DIR/rc.local" > "$RC_LOCAL"
 chmod +x "$RC_LOCAL"
 sep "refreshed rc.local boot persistence block"
 
-# Existing supervisors remain attached. Only a first installation needs
-# svscan to notice the new link. PackageManager is not restarted by an update.
-sleep 3
-for service_path in "$SERVICE_LINK/log" "$SERVICE_LINK"; do
-    svc -u "$service_path"
-done
+# The same bounded boot path handles first install, an owned old alias, and
+# a firmware-created legacy service directory without replacing that directory.
+sh "$INSTALL_DIR/boot.sh"
 
 sep "installed version $(cat "$INSTALL_DIR/version" 2>/dev/null || echo unknown)"

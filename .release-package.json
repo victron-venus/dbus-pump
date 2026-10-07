@@ -4,6 +4,7 @@
     "dbus_pump",
     "setup",
     "update.sh",
+    "boot.sh",
     "restart.sh",
     "services",
     "gitHubInfo",

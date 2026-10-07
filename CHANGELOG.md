@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - Unreleased
+
+### Fixed
+- Give the Home Assistant bridge its own `dbus-pump-ha` supervisor and log names,
+  avoiding the native Venus OS pump service restored at every boot.
+- Install one persistent, idempotent boot hook with bounded supervisor retries;
+  migrate only a positively owned legacy symlink and preserve device settings.
+- Keep firmware service files and native stop markers untouched during install,
+  restart, boot recovery and uninstall. Reject ambiguous service layouts.
+- Require the firmware Python 3.12 runtime before stopping an existing worker.
+
+### Documentation
+- Describe autostart verification, native coexistence, migration and rollback
+  limits, including the unchanged shutdown valve-close behavior.
+
 ## [0.1.3] - 2026-09-12
 
 ### Fixed

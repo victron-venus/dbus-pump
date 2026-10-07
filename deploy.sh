@@ -65,7 +65,7 @@ echo ">>> Service status:"
 STATUS=""
 for _attempt in $(seq 1 15); do
     sleep 1
-    if STATUS="$(ssh "$SSH_HOST" "svstat /service/dbus-pump 2>&1")"; then
+    if STATUS="$(ssh "$SSH_HOST" "svstat /service/dbus-pump-ha 2>&1")"; then
         if [[ "$STATUS" == *": up (pid "* ]]; then
             printf '%s\n' "$STATUS"
             break
@@ -80,8 +80,8 @@ fi
 # The service dir must be a symlink into the install tree. A real directory
 # here means stale code got resurrected (legacy /opt copy or boot-order race)
 # and will keep running no matter what update.sh installs elsewhere.
-if ! ssh "$SSH_HOST" "test -L /service/dbus-pump"; then
-    echo "ERROR: /service/dbus-pump is not a symlink - split-brain install" >&2
+if ! ssh "$SSH_HOST" "test -L /service/dbus-pump-ha"; then
+    echo "ERROR: /service/dbus-pump-ha is not a symlink - split-brain install" >&2
     exit 1
 fi
 

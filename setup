@@ -23,8 +23,7 @@ fi
 
 if [ "$scriptAction" == 'UNINSTALL' ]; then
     logMessage "Uninstalling $packageName"
-    svc -dk "/service/dbus-pump/log" "/service/dbus-pump" 2>/dev/null || true
-    rm -rf "/service/dbus-pump"
+    sh "$scriptDir/boot.sh" uninstall || exit $?
     if [ -f /data/rc.local ]; then
         sed -i '/# === dbus-pump service persistence ===/,/# === end dbus-pump ===/d' /data/rc.local 2>/dev/null || true
     fi

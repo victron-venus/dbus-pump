@@ -164,14 +164,66 @@ or:
 ```sh
 ./deploy.sh          # streams repo to Cerbo, runs update.sh there
 ./restart.sh         # restart the service only
-ssh cerbo 'tail -f /var/log/dbus-pump/current'   # logs
+ssh Cerbo 'tail -f /var/log/dbus-pump-ha/current'   # logs
 ```
 
 Uninstall:
 
 ```sh
-ssh cerbo 'svc -dk /service/dbus-pump/log /service/dbus-pump; rm /service/dbus-pump'
+ssh Cerbo '/data/dbus-pump/setup uninstall'
 ```
+
+## Autostart and firmware coexistence
+
+Installation enables automatic startup on every Cerbo boot. The persistent
+service definitions stay in `/data/dbus-pump/service/dbus-pump`; their unique
+supervisor link is `/service/dbus-pump-ha`. `update.sh` installs `boot.sh` and
+one managed invocation in `/data/rc.local`, before an existing `exit 0`.
+The same helper runs during installation and late boot, after the Venus service
+overlay is mounted. It waits up to 20 seconds for the `/service` directory and
+retries each supervisor startup request for up to 20 seconds. The directory
+check alone is not a mount readiness check for an earlier boot stage.
+Repeated calls preserve the owned link and running service directories.
+
+Venus OS already provides a **different** `/service/dbus-pump` service. At boot,
+the firmware copies its service templates into `/service`, including a `down`
+marker for its native pump function. Older versions of this project's boot hook
+correctly refused to replace that directory, but consequently never linked the
+HA bridge after a reboot. Version 0.1.6 uses the separate `dbus-pump-ha` name.
+It leaves the native directory, its `down` marker, and firmware files untouched.
+Do not delete the native service or remove its marker to repair this bridge.
+
+An old `/service/dbus-pump` **symlink** is migrated only if it points exactly to
+this project's persistent service directory. Its inode and supervisor directory
+handles are retained. Unknown symlinks and occupied new service paths fail
+closed. Updates preserve device-local `local_config.py`; they do not enable
+`ENABLE_CONTROL` or change D-Bus device instances. Logger output moves to its
+own directory so it cannot contend with the native firmware logger.
+
+Check after installation:
+
+```sh
+svstat /service/dbus-pump-ha /service/dbus-pump-ha/log
+readlink /service/dbus-pump-ha
+# Expected: /data/dbus-pump/service/dbus-pump
+sh /data/dbus-pump/boot.sh  # idempotent link/startup recovery, not a restart
+```
+
+Confirm that the tank and both pump services expose fresh HA-derived values on
+D-Bus. Testing the helper against a removed custom link checks reconstruction;
+it does not claim that a complete hardware reboot was tested. Uninstall stops
+and detaches only positively identified project links and removes its managed
+boot hook, preserving the native service and local configuration.
+
+For rollback, keep a private copy of the installed package and local
+configuration, and record the exact release/checksum. Versions before 0.1.6
+reuse the conflicting service name: simply reinstalling an older package is
+not a reliable autostart rollback. Restore a previously accepted package together
+with a compatible boot hook, verify service ownership, then check telemetry.
+A restart or uninstall retains the existing graceful-shutdown valve-close
+behavior, including when `ENABLE_CONTROL=False`; that option disables automatic
+hysteresis, not manual D-Bus commands or the shutdown close action. Do not restart
+the bridge solely as a non-actuating health probe.
 
 ## Safety model
 
@@ -223,8 +275,10 @@ same limits on software-controlled valve closure.
   values keep being served. Check `local_config.py` token validity.
 - **Valve not actuating**: `ENABLE_CONTROL` still False? Logs (throttled to
   once/min) say why commands are suppressed.
-- **Service down**: `svstat /service/dbus-pump`; multilog under
-  `/var/log/dbus-pump`.
+- **Service down**: `svstat /service/dbus-pump-ha /service/dbus-pump-ha/log`;
+  bounded multilog output is under `/var/log/dbus-pump-ha` (25 KB × 4 archives).
+  Run `sh /data/dbus-pump/boot.sh` to restore a missing owned link and request
+  startup. A successful startup request is not a telemetry health check.
 
 ## Development
 
@@ -251,18 +305,19 @@ reinstalling from the installed tree does not delete the update source.
 The updater preserves `local_config.py`; `deploy.sh` deliberately replaces it
 when the workstation has a local copy (`PUSH_LOCAL_CONFIG=1`).
 Existing service and log directory inodes, ownership, supervisor state and the
-canonical `/service` symlink are preserved. Only the application is stopped;
-run scripts are replaced atomically and a healthy logger keeps running.
+owned `/service/dbus-pump-ha` symlink are preserved. The application is stopped;
+run scripts are replaced atomically. A healthy logger keeps running unless its
+run definition changed, such as the migration to its private log directory.
 Ordinary updates do not restart PackageManager. A stuck application receives
 one supervisor-scoped kill after twenty seconds; installation aborts if it is
-still running after twenty-five seconds. Unexpected service links, real `/service`
-directories or legacy firmware copies require a separate migration before
-updating; the updater leaves them untouched.
+still running after twenty-five seconds. Unexpected service links or an occupied
+`/service/dbus-pump-ha` path are rejected before stopping anything. The native
+`/service/dbus-pump` directory and firmware files are preserved in place.
 
 Service definitions persist under `/data/dbus-pump/service/dbus-pump`.
-`/service/dbus-pump` is a symlink recreated by `/data/rc.local`, including
+`/service/dbus-pump-ha` is a symlink recreated by `/data/rc.local`, including
 when that script already ends with `exit 0`. The logger creates
-`/var/log/dbus-pump` and uses bounded `multilog` rotation (`s25000 n4`).
+`/var/log/dbus-pump-ha` and uses bounded `multilog` rotation (`s25000 n4`).
 On the audited Venus OS image, `/var/log` resolves to persistent `/data/log`,
 so these logs write flash. Heartbeats live in volatile `/run` storage.
 Runtime data does not require writes to the
@@ -280,9 +335,9 @@ python3 -c "import requests, dbus; from gi.repository import GLib"
 Verify a running process and its D-Bus data after installation:
 
 ```sh
-svstat /service/dbus-pump /service/dbus-pump/log
-readlink /service/dbus-pump
-tail -n 40 /var/log/dbus-pump/current
+svstat /service/dbus-pump-ha /service/dbus-pump-ha/log
+readlink /service/dbus-pump-ha
+tail -n 40 /var/log/dbus-pump-ha/current
 ```
 
 `update.sh` confirms termination before copying but does not wait for a fresh
@@ -292,7 +347,9 @@ verify startup and D-Bus availability.
 `deploy.sh` fails if a fresh heartbeat does not appear within 60 seconds or the
 service never reaches `up`. A heartbeat proves the loop is running, not that
 Home Assistant is reachable: also inspect `/Connected` and the log. Restore a
-previous release with its `update.sh`, keeping the device-local configuration.
+previous accepted release only with the compatible autostart layout described
+above, keeping the device-local configuration. Pre-0.1.6 scripts alone reintroduce
+the boot-name collision.
 Installer regressions cover repeated updates with live directory handles,
 supervisor-state and ownership preservation, atomic run-script replacement,
 configuration, safe rejection before stopping, and boot hooks before `exit 0`.

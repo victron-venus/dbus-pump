@@ -1,15 +1,30 @@
 # dbus-pump deployment notes
 
-Findings from the first bring-up (2026-08-23), Cerbo GX on Raspberry Pi 3,
-Venus OS v3.75, portal ID `b827ebea1ece`.
+Historical findings from the first bring-up (2026-08-23), Cerbo GX on Raspberry
+Pi 3, Venus OS v3.75, portal ID `b827ebea1ece`. See the README for current commands.
+
+## Autostart correction (0.1.6)
+
+The native firmware service and this bridge used the same supervisor name.
+Venus recreates its own `/service/dbus-pump` directory during boot, before
+`/data/rc.local`. The old guarded hook then skipped linking the HA bridge.
+The bridge now uses `/service/dbus-pump-ha` and `/var/log/dbus-pump-ha`; its
+persistent service directory remains `/data/dbus-pump/service/dbus-pump`.
+Installation migrates only an exact owned legacy symlink, preserves the native
+directory and stop marker, and installs an idempotent bounded boot helper.
+Native D-Bus instance 0 and the bridge instances 1/2 remain separate.
+
+The following older verification results are historical, not a fresh physical
+control acceptance of the current beta.
 
 ## Device facts
 
 - Native GX "Pump start/stop" feature **disabled** (relay function 0 free) →
   no conflict; we took `tank` instance 21 and `pump.startstop1` (pump) /
   `pump.startstop2` (valve).
-- Services run under daemontools at `/data/dbus-pump`, symlinked from
-  `/service/dbus-pump`; logs in `/var/log/dbus-pump` via multilog.
+- At initial bring-up, the bridge used `/service/dbus-pump` and
+  `/var/log/dbus-pump`. Those paths belong to the native service again; use the
+  unique `dbus-pump-ha` supervisor/log paths for the bridge from 0.1.6 onward.
 - Deploy path: `./deploy.sh` from a dev machine (rsync + on-device
   `update.sh`), or the auto-deploy webhook from inverter-monitoring.
 
@@ -23,7 +38,7 @@ Venus OS v3.75, portal ID `b827ebea1ece`.
 | `'VeDbusService' has no attribute 'items'` | it's not a dict | mirror values as instance attributes |
 | empty multilog | stderr not captured | `exec 2>&1` in service run script |
 | CI-only failure: first valve command suppressed | fresh `time.monotonic()` ≈ small value + `_last_transition = 0.0` looks like a recent transition | init `_last_transition = clock() - min_switch_interval` |
-| crash-loop after update: stale supervise/run processes with `(deleted)` cwd | daemontools inode churn across updates | `update.sh` reaps by `/proc/*/cwd` scan before reinstall |
+| crash-loop after update: stale supervise/run processes with `(deleted)` cwd | daemontools inode churn across updates | Current updater preserves directory handles and changes only owned run files |
 
 ## Verification results
 
