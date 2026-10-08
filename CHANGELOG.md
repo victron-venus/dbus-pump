@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Maintenance
 
+- Record test and build dependencies in `uv.lock` for reproducible Python checks, preserving the existing locked runtime versions.
 - Separate manual callbacks and automatic valve commands from snapshot publication while preserving freshness deadlines and in-flight compensation.
 - Publish reviewed release notes from the exact source commit used to build each candidate, preserving build provenance.
 - Document contribution checks, confidential security reporting and the project-specific trust boundaries.
