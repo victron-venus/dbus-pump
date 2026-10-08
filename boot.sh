@@ -7,7 +7,8 @@ LINK=/service/dbus-pump-ha
 LEGACY=/service/dbus-pump
 
 owned_link() {
-    [ -L "$1" ] && [ "$(readlink "$1")" = "$TARGET" ]
+    owned_link_path="$1"
+    [ -L "$owned_link_path" ] && [ "$(readlink "$owned_link_path")" = "$TARGET" ]
 }
 
 check_layout() {
@@ -33,28 +34,30 @@ check_layout() {
 }
 
 start_service() {
+    start_service_path="$1"
     waited=0
     while [ "$waited" -lt 20 ]; do
-        if svc -u "$1" 2>/dev/null; then
+        if svc -u "$start_service_path" 2>/dev/null; then
             return 0
         fi
         sleep 1
         waited=$((waited + 1))
     done
-    echo "Supervisor did not accept startup within 20 seconds: $1" >&2
+    echo "Supervisor did not accept startup within 20 seconds: $start_service_path" >&2
     return 1
 }
 
 stop_service() {
-    svc -d "$1"
+    stop_service_path="$1"
+    svc -d "$stop_service_path"
     waited=0
     while [ "$waited" -lt 25 ]; do
-        status=$(svstat "$1" 2>/dev/null || true)
+        status=$(svstat "$stop_service_path" 2>/dev/null || true)
         case "$status" in *": down "*) return 0 ;; esac
         sleep 1
         waited=$((waited + 1))
     done
-    echo "Service did not stop; its link was preserved: $1" >&2
+    echo "Service did not stop; its link was preserved: $stop_service_path" >&2
     return 1
 }
 
