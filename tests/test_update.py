@@ -366,7 +366,8 @@ def test_owned_legacy_alias_migrates_without_replacing_live_directory_handles(ve
     finally:
         os.close(descriptor)
     assert_directory_metadata(before)
-    assert not venus.legacy.exists() and not venus.legacy.is_symlink()
+    assert not venus.legacy.exists()
+    assert not venus.legacy.is_symlink()
     assert venus.link.lstat().st_ino == legacy_inode
     assert venus.link.resolve() == venus.service
     # A positively identified legacy alias can safely stop the owned worker
@@ -380,7 +381,8 @@ def test_boot_deduplicates_only_an_exact_owned_legacy_alias(venus):
     inode = venus.link.lstat().st_ino
     result = run_boot(venus)
     assert result.returncode == 0, result.stdout + result.stderr
-    assert not venus.legacy.exists() and not venus.legacy.is_symlink()
+    assert not venus.legacy.exists()
+    assert not venus.legacy.is_symlink()
     assert venus.link.lstat().st_ino == inode
 
 
@@ -441,7 +443,8 @@ def test_uninstall_removes_owned_alias_but_preserves_native_firmware(venus):
     before = native_firmware_service(venus)
     result = run_boot(venus, "uninstall")
     assert result.returncode == 0, result.stdout + result.stderr
-    assert not venus.link.exists() and not venus.link.is_symlink()
+    assert not venus.link.exists()
+    assert not venus.link.is_symlink()
     assert_directory_metadata(before)
     assert (venus.legacy / "down").read_text() == "native service stays disabled\n"
     assert venus.config.read_text() == "device-local configuration must survive\n"

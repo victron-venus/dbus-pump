@@ -33,7 +33,8 @@ def make(clock, **kw):
 def test_opens_below_start(clock):
     c = make(clock)
     desired, why = c.update(20.0, fresh=True)
-    assert desired is True and why == "auto-open"
+    assert desired is True
+    assert why == "auto-open"
 
 
 def test_closes_above_stop(clock):
@@ -41,7 +42,8 @@ def test_closes_above_stop(clock):
     c.update(20.0, True)
     clock.advance(120)
     desired, why = c.update(90.0, fresh=True)
-    assert desired is False and why == "auto-close"
+    assert desired is False
+    assert why == "auto-close"
 
 
 def test_hysteresis_hold_between_thresholds(clock):
@@ -49,7 +51,8 @@ def test_hysteresis_hold_between_thresholds(clock):
     c.update(20.0, True)
     clock.advance(120)
     desired, why = c.update(50.0, fresh=True)
-    assert desired is True and why == "hold"
+    assert desired is True
+    assert why == "hold"
 
 
 def test_stale_sensor_forces_close(clock):
@@ -57,13 +60,15 @@ def test_stale_sensor_forces_close(clock):
     c.update(20.0, True)
     clock.advance(121)  # beyond stale timeout, no fresh reading since open
     desired, why = c.update(None, fresh=False)
-    assert desired is False and why == "stale-close"
+    assert desired is False
+    assert why == "stale-close"
 
 
 def test_never_fresh_means_immediate_stale_close(clock):
     c = make(clock)
     desired, why = c.update(None, fresh=False)
-    assert desired is False and why == "stale-close"
+    assert desired is False
+    assert why == "stale-close"
 
 
 def test_anti_chatter_suppresses_flip(clock):
@@ -71,24 +76,28 @@ def test_anti_chatter_suppresses_flip(clock):
     c.update(20.0, True)  # open at t=1000
     clock.advance(10)  # only 10s later
     desired, why = c.update(90.0, fresh=True)
-    assert desired is True and why == "hold"
+    assert desired is True
+    assert why == "hold"
     clock.advance(60)  # now 70s since transition
     desired, why = c.update(90.0, fresh=True)
-    assert desired is False and why == "auto-close"
+    assert desired is False
+    assert why == "auto-close"
 
 
 def test_manual_on_overrides_auto(clock):
     c = make(clock)
     c.set_mode(MODE_ON)
     desired, why = c.update(95.0, fresh=True)
-    assert desired is True and why == "manual-on"
+    assert desired is True
+    assert why == "manual-on"
 
 
 def test_manual_off_overrides_low_level(clock):
     c = make(clock)
     c.set_mode(MODE_OFF)
     desired, why = c.update(5.0, fresh=True)
-    assert desired is False and why == "manual-off"
+    assert desired is False
+    assert why == "manual-off"
 
 
 def test_back_to_auto_resumes_logic(clock):
@@ -98,13 +107,25 @@ def test_back_to_auto_resumes_logic(clock):
     c.set_mode(MODE_AUTO)
     clock.advance(300)
     desired, why = c.update(10.0, fresh=True)
-    assert desired is True and why == "auto-open"
+    assert desired is True
+    assert why == "auto-open"
 
 
-def test_invalid_thresholds_rejected():
-    with pytest.raises(ValueError):
+@pytest.mark.parametrize(
+    "start,stop",
+    [
+        (85.0, 30.0),
+        (30.0, 30.0),
+        (float("nan"), 85.0),
+        (30.0, float("nan")),
+        (float("nan"), float("nan")),
+    ],
+    ids=["reversed", "equal", "nan-start", "nan-stop", "both-nan"],
+)
+def test_invalid_thresholds_rejected(start, stop):
+    with pytest.raises(ValueError, match="VALVE_STOP_VALUE must be greater than VALVE_START_VALUE"):
         ValveController(
-            start_value=85.0, stop_value=30.0, sensor_stale_timeout=1, min_switch_interval=1
+            start_value=start, stop_value=stop, sensor_stale_timeout=1, min_switch_interval=1
         )
 
 
