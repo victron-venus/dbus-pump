@@ -37,7 +37,9 @@ def template_response(level="42.0", pump="on", valve="off", cm="82.5"):
 
 def test_build_template_contains_entities():
     t = build_template("s.l", "s.p", "s.v")
-    assert "states('s.l')" in t and "'pump': states('s.p')" in t and "'valve': states('s.v')" in t
+    assert "states('s.l')" in t
+    assert "'pump': states('s.p')" in t
+    assert "'valve': states('s.v')" in t
     # no raw-height entity -> placeholder id, still valid Jinja for HA
     assert "states('__no_cm_sensor__')" in t
 
@@ -61,9 +63,11 @@ def test_poll_success(post):
     post.return_value = template_response()
     c = make_client()
     r = c.poll()
-    assert r["ok"] is True and r["level"] == 42.0
+    assert r["ok"] is True
+    assert r["level"] == 42.0
     assert r["cm"] == 82.5
-    assert r["pump"] is True and r["valve"] is False
+    assert r["pump"] is True
+    assert r["valve"] is False
     args, kwargs = post.call_args
     assert args[0] == "http://ha:8123/api/template"
     assert "states('sensor.level')" in kwargs["json"]["template"]
@@ -75,7 +79,8 @@ def test_poll_cm_unavailable_is_none_but_ok(post):
     post.return_value = template_response(cm="unknown", level="50.0")
     c = make_client()
     r = c.poll()
-    assert r["ok"] is True and r["cm"] is None
+    assert r["ok"] is True
+    assert r["cm"] is None
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")
@@ -83,7 +88,8 @@ def test_poll_nonnumeric_level_marks_not_ok(post):
     post.return_value = template_response(level="unavailable")
     c = make_client()
     r = c.poll()
-    assert r["ok"] is False and r["level"] is None
+    assert r["ok"] is False
+    assert r["level"] is None
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")
@@ -103,38 +109,34 @@ def test_poll_failure_serves_last_known(post):
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")
-def test_circuit_breaker_opens_and_resets(post, monkeypatch=None):
+def test_circuit_breaker_opens_and_resets(post, monkeypatch):
     clock = FakeClock()
     breaker = CircuitBreaker(threshold=3, reset_timeout=60.0)
 
     # drive the clock used inside the breaker by patching time.monotonic
     import dbus_pump.ha_client as mod
 
-    real_monotonic = mod.time.monotonic
-    mod.time.monotonic = lambda: clock.t
+    monkeypatch.setattr(mod.time, "monotonic", lambda: clock.t)
 
-    try:
-        from requests.exceptions import ConnectionError as ReqConnError
+    from requests.exceptions import ConnectionError as ReqConnError
 
-        post.side_effect = ReqConnError("down")
-        c = make_client(breaker=breaker)
-        for _ in range(3):
-            c.poll()
-        assert breaker.is_open is True
-        # while open, poll does not even hit the network
-        calls_before = post.call_count
+    post.side_effect = ReqConnError("down")
+    c = make_client(breaker=breaker)
+    for _ in range(3):
         c.poll()
-        assert post.call_count == calls_before
+    assert breaker.is_open is True
+    # while open, poll does not even hit the network
+    calls_before = post.call_count
+    c.poll()
+    assert post.call_count == calls_before
 
-        clock.advance(61)  # past reset timeout -> half-open allows one attempt
-        assert breaker.is_open is False
-        post.side_effect = None
-        post.return_value = template_response()
-        r = c.poll()
-        assert r["ok"] is True
-        assert breaker.is_open is False
-    finally:
-        mod.time.monotonic = real_monotonic
+    clock.advance(61)  # past reset timeout -> half-open allows one attempt
+    assert breaker.is_open is False
+    post.side_effect = None
+    post.return_value = template_response()
+    r = c.poll()
+    assert r["ok"] is True
+    assert breaker.is_open is False
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")
