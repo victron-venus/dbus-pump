@@ -11,6 +11,11 @@ imports cleanly without velib_python/dbus.
 
 import logging
 
+# Shared protocol identifiers keep publication and update paths consistent.
+DBUS_STATE_PATH = "/State"
+DBUS_MODE_PATH = "/Mode"
+DBUS_CONNECTED_PATH = "/Connected"
+
 logger = logging.getLogger(__name__)
 
 VEDBUS_AVAILABLE = False
@@ -74,7 +79,7 @@ def _identity_paths(
     svc.add_path("/HardwareVersion", "n/a")
     svc.add_path("/Serial", f"dbuspump-{instance}")
     svc.add_path("/CustomName", custom_name)
-    svc.add_path("/Connected", 1)
+    svc.add_path(DBUS_CONNECTED_PATH, 1)
 
 
 FLUID_TYPE_FRESH_WATER = 1
@@ -112,10 +117,10 @@ class WaterSystemServices:
         def _make_pump(name: str, inst: int, on_mode):
             svc = _make_service(f"com.victronenergy.pump.startstop{inst}")
             _identity_paths(svc, name, version, name, inst, "Home Assistant")
-            svc.add_path("/State", None)  # None unknown, 0 stopped, 1 running
+            svc.add_path(DBUS_STATE_PATH, None)  # None unknown, 0 stopped, 1 running
             # vedbus calls onchangecallback(path, value); our handlers take
             # the last arg so both signatures work.
-            svc.add_path("/Mode", 0, writeable=True, onchangecallback=on_mode)
+            svc.add_path(DBUS_MODE_PATH, 0, writeable=True, onchangecallback=on_mode)
             svc.add_path("/ActiveTankService", tank_bus_name)
             return svc
 
@@ -145,22 +150,22 @@ class WaterSystemServices:
 
     def set_connected(self, connected: bool) -> None:
         value = 1 if connected else 0
-        self.tank["/Connected"] = value
-        self.pump["/Connected"] = value
-        self.valve["/Connected"] = value
+        self.tank[DBUS_CONNECTED_PATH] = value
+        self.pump[DBUS_CONNECTED_PATH] = value
+        self.valve[DBUS_CONNECTED_PATH] = value
 
     def update_device_state(self, which: str, running: bool | None) -> None:
         svc = self.pump if which == "pump" else self.valve
         # None = HA unavailable/unknown — do not publish as stopped (0).
         if running is None:
-            svc["/State"] = None
+            svc[DBUS_STATE_PATH] = None
         else:
-            svc["/State"] = 1 if running else 0
+            svc[DBUS_STATE_PATH] = 1 if running else 0
 
     def set_mode_quietly(self, which: str, mode: int) -> None:
         """Set /Mode without re-triggering the onchange handler loop."""
         svc = self.pump if which == "pump" else self.valve
         if isinstance(svc, NullDbusService):
-            svc.items["/Mode"] = mode  # bypass onchange
+            svc.items[DBUS_MODE_PATH] = mode  # bypass onchange
         else:
-            svc["/Mode"] = mode
+            svc[DBUS_MODE_PATH] = mode

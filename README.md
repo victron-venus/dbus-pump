@@ -383,3 +383,9 @@ The production bridge starts with `/Connected = 0` until it has a valid source
 snapshot. A failure during initialization does not expose a partial service.
 This uses the Venus OS registration lifecycle; it does not change local control
 settings, source freshness deadlines, or the installer layout.
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for reports, development checks and pull requests,
+[SECURITY.md](SECURITY.md) for private vulnerability reporting and deployment trust boundaries,
+and the [OpenSSF evidence index](docs/openssf-evidence.md) for assessment references and remaining verification.

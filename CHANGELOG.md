@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.6] - Unreleased
+## [0.1.6] - Development line
 
 ### Fixed
 - Give the Home Assistant bridge its own `dbus-pump-ha` supervisor and log names,
@@ -16,6 +16,19 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 - Describe autostart verification, native coexistence, migration and rollback
   limits, including the unchanged shutdown valve-close behavior.
+
+### Maintenance
+
+- Publish reviewed release notes from the exact source commit used to build each candidate, preserving build provenance.
+- Document contribution checks, confidential security reporting and the project-specific trust boundaries.
+
+### Upgrade
+
+The Home Assistant worker uses dbus-pump-ha rather than the native Venus OS pump supervisor. The installer preserves settings and only migrates a positively identified old service. Review the documented boot recovery and rollback limits before updating; native firmware pump service files remain untouched.
+
+### Security
+
+Private vulnerability reporting and response policy are documented in SECURITY.md. This maintenance update strengthens release evidence and review instructions; it does not replace deployment authentication, network isolation or independent equipment safeguards. No new project CVE is announced by these changes.
 
 ## [0.1.3] - 2026-09-12
 
