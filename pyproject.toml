@@ -44,3 +44,7 @@ disable = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=dbus_pump --cov-report=term-missing --cov-fail-under=60"
+
+# Install wheel-only build tools before building the local package without build isolation.
+[dependency-groups]
+build = ["build==1.6.1", "setuptools==84.0.0", "wheel==0.48.0"]
