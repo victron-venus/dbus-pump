@@ -55,28 +55,8 @@ class App:
         entity = config.HA_VALVE_SWITCH_ENTITY if which == "valve" else config.HA_PUMP_SWITCH_ENTITY
         logger.info("%s /Mode changed to %s", which, mode)
         action = {MODE_ON: ("turn_on", True), MODE_OFF: ("turn_off", False)}.get(mode)
-        if action:
-            act, state = action
-            compensating = (
-                which == "valve"
-                and self.worker is not None
-                and self.worker.service_pending(entity, "turn_off" if state else "turn_on")
-            )
-
-            def completed(ok):
-                if not ok:
-                    if compensating and self.enable_control:
-                        self._valve_reconcile_required = True
-                    return
-                self.services.update_device_state(which, state)
-                self._last_commanded_valve = (
-                    state if which == "valve" else self._last_commanded_valve
-                )
-                if which == "valve":
-                    self._valve_reconcile_required = False
-
-            if not self._request_service(act, entity, completed):
-                return False
+        if action and not self._request_manual_action(which, action, entity):
+            return False
         if which == "valve":
             self.controller.set_mode(mode)
             if not action and self.worker is not None and self.enable_control:
@@ -85,6 +65,27 @@ class App:
                 # the automatic policy now requires OFF.
                 self.apply_snapshot(dict(self._last_snapshot, ok=False))
         return True
+
+    def _request_manual_action(self, which, action, entity):
+        """Queue one manual write while preserving in-flight valve reconciliation."""
+        act, state = action
+        compensating = (
+            which == "valve"
+            and self.worker is not None
+            and self.worker.service_pending(entity, "turn_off" if state else "turn_on")
+        )
+
+        def completed(ok):
+            if not ok:
+                if compensating and self.enable_control:
+                    self._valve_reconcile_required = True
+                return
+            self.services.update_device_state(which, state)
+            self._last_commanded_valve = state if which == "valve" else self._last_commanded_valve
+            if which == "valve":
+                self._valve_reconcile_required = False
+
+        return self._request_service(act, entity, completed)
 
     def _request_service(self, action, entity, callback, deduplicate=False):
         if self.worker is not None:
@@ -156,48 +157,54 @@ class App:
         self.services.update_device_state("valve", snapshot["valve"])
 
         if self.enable_control:
-            fresh = now_ok and snapshot["level"] is not None
-            desired, why = self.controller.update(snapshot["level"], fresh, sampled_at=started_at)
-            entity = config.HA_VALVE_SWITCH_ENTITY
-            opposite = "turn_off" if desired else "turn_on"
-            superseded = self.worker is not None and self.worker.service_pending(entity, opposite)
-            if superseded:
-                self.worker.cancel_service(entity)
-                self._valve_reconcile_required = True
-            # Only command when the best-known actual state differs; avoids
-            # spurious writes on startup / in the hysteresis hold band.
-            known = (
-                snapshot["valve"] if snapshot["valve"] is not None else self._last_commanded_valve
-            )
-            if desired != known or self._valve_reconcile_required:
-                if known is None and not self._valve_reconcile_required:
-                    logger.debug(
-                        "Valve %s wanted (%s) but HA state unknown - not commanding blindly",
-                        "ON" if desired else "OFF",
-                        why,
-                    )
-                else:
-                    act = "turn_on" if desired else "turn_off"
-                    logger.info("Valve %s (%s)", "ON" if desired else "OFF", why)
-
-                    # A cancelled request might already be in flight. Queue
-                    # its opposite even if the older sample appears to match.
-                    compensating = self._valve_reconcile_required
-
-                    def completed(ok):
-                        if ok:
-                            self._last_commanded_valve = desired
-                            self.services.update_device_state("valve", desired)
-                        elif compensating:
-                            self._valve_reconcile_required = True
-
-                    if self._request_service(act, entity, completed, deduplicate=True):
-                        self._valve_reconcile_required = False
+            self._apply_automatic_control(snapshot, now_ok, started_at)
         elif snapshot.get("valve") is not None:
             self._last_commanded_valve = snapshot["valve"]
 
         _write_heartbeat()
         return True
+
+    def _apply_automatic_control(self, snapshot, now_ok, started_at):
+        """Reconcile the valve against the controller decision and pending writes."""
+        fresh = now_ok and snapshot["level"] is not None
+        desired, why = self.controller.update(snapshot["level"], fresh, sampled_at=started_at)
+        entity = config.HA_VALVE_SWITCH_ENTITY
+        opposite = "turn_off" if desired else "turn_on"
+        superseded = self.worker is not None and self.worker.service_pending(entity, opposite)
+        if superseded:
+            self.worker.cancel_service(entity)
+            self._valve_reconcile_required = True
+        # Only command when the best-known actual state differs; avoids
+        # spurious writes on startup / in the hysteresis hold band.
+        known = snapshot["valve"] if snapshot["valve"] is not None else self._last_commanded_valve
+        if desired != known or self._valve_reconcile_required:
+            self._request_automatic_valve(desired, why, entity, known)
+
+    def _request_automatic_valve(self, desired, why, entity, known):
+        """Queue a deduplicated command while preserving compensating writes."""
+        if known is None and not self._valve_reconcile_required:
+            logger.debug(
+                "Valve %s wanted (%s) but HA state unknown - not commanding blindly",
+                "ON" if desired else "OFF",
+                why,
+            )
+            return
+        act = "turn_on" if desired else "turn_off"
+        logger.info("Valve %s (%s)", "ON" if desired else "OFF", why)
+
+        # A cancelled request might already be in flight. Queue
+        # its opposite even if the older sample appears to match.
+        compensating = self._valve_reconcile_required
+
+        def completed(ok):
+            if ok:
+                self._last_commanded_valve = desired
+                self.services.update_device_state("valve", desired)
+            elif compensating:
+                self._valve_reconcile_required = True
+
+        if self._request_service(act, entity, completed, deduplicate=True):
+            self._valve_reconcile_required = False
 
     def controller_level_if_fresh(self, snapshot):
         # Last-known level stays valid only inside the stale window.
