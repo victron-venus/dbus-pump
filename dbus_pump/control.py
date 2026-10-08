@@ -46,6 +46,21 @@ class ValveController:
         if mode in (MODE_AUTO, MODE_ON, MODE_OFF):
             self.mode = mode
 
+    def _sensor_state(
+        self, level: float | None, fresh: bool, sampled_at: float | None, now: float
+    ) -> tuple[float | None, bool]:
+        """Normalize a sample and preserve its existing freshness deadline."""
+        sampled_at = now if sampled_at is None else sampled_at
+        if level is not None and not math.isfinite(level):
+            level = None
+        if fresh and level is not None and 0 <= now - sampled_at < self.sensor_stale_timeout:
+            self.last_level_time = sampled_at
+        stale = (
+            self.last_level_time is None or now - self.last_level_time >= self.sensor_stale_timeout
+        )
+
+        return level, stale
+
     def update(
         self, level: float | None, fresh: bool, sampled_at: float | None = None
     ) -> tuple[bool, str]:
@@ -56,14 +71,7 @@ class ValveController:
         'hold' (no change).
         """
         now = self._clock()
-        sampled_at = now if sampled_at is None else sampled_at
-        if level is not None and not math.isfinite(level):
-            level = None
-        if fresh and level is not None and 0 <= now - sampled_at < self.sensor_stale_timeout:
-            self.last_level_time = sampled_at
-        stale = (
-            self.last_level_time is None or now - self.last_level_time >= self.sensor_stale_timeout
-        )
+        level, stale = self._sensor_state(level, fresh, sampled_at, now)
 
         if self.mode == MODE_ON:
             return True, "manual-on"
