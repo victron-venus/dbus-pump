@@ -11,7 +11,7 @@ jobs:
     name: CI
     # Reusable workflows must be called at the JOB level (no runs-on/steps);
     # a step-level `uses` of a workflow_call workflow is rejected by GitHub.
-    uses: victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml@b93b2e5dd29237f254e5273acf91272abbcd33d9 # main
+    uses: victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml@5892b68cf18ac330b76773532ca28bb716492fe9 # main
     with:
       use-uv-lock: true
       dependency-extras: "dev"
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: '3.12.13'
       - name: Set up uv
-        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       # Install dependency wheels only; test the checked-out source without build hooks.
       # The existing reusable job separately validates editable project installation.
       - name: Install locked development dependencies
