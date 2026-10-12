@@ -133,3 +133,20 @@ def test_dry_run_smoke():
     sys.argv = ["dbus-pump", "--dry-run"]
     rc = main_mod.main()
     assert rc == 0
+
+
+def test_stale_close_stays_closed_when_fresh_level_recovers_in_band(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(main_mod, "_now", lambda: now[0])
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    app = build_app(dict(BASE))
+    app.controller._clock = lambda: now[0]
+    app.controller._last_transition = now[0] - app.controller.min_switch_interval
+    app.apply_snapshot(dict(BASE, level=20.0))
+    assert app.client.calls[-1][1] == "turn_on"
+    now[0] += 121
+    app.apply_snapshot(dict(BASE, level=None, valve=True, ok=False))
+    assert app.client.calls[-1][1] == "turn_off"
+    now[0] += 1
+    app.apply_snapshot(dict(BASE, level=50.0, valve=False))
+    assert [call[1] for call in app.client.calls] == ["turn_on", "turn_off"]
