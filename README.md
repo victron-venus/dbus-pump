@@ -231,11 +231,39 @@ the bridge solely as a non-actuating health probe.
   `VALVE_STOP_VALUE`. No oscillation around one threshold.
 - **Stale sensor fail-safe**: no fresh level reading within
   `SENSOR_STALE_TIMEOUT` → valve forced CLOSED, tank `/Status` = 2 (fault).
+  After a stale close, a fresh level inside the hysteresis band keeps the valve
+  closed. Reopening requires a fresh level at or below `VALVE_START_VALUE` and
+  the normal `MIN_SWITCH_INTERVAL` since the close. Repeated stale observations
+  do not extend that interval.
 - **Manual override**: `/Mode` on each startstop service bypasses automation
   (0 auto, 1 always-on, 2 always-off).
 - **Graceful shutdown**: SIGTERM forces the valve CLOSED before exiting.
 - Residual risk: if the Cerbo loses power while the valve is open, nothing
   closes it. Accept this or add a hardware NC interlock.
+
+### Command ownership and limits
+
+`dbus-pump` is the command owner for its configured HA pump and valve switches.
+The valve's AUTO policy and explicit D-Bus `/Mode` requests share one worker;
+the pump has manual ON/OFF control only. Disable HA/Node-RED schedules and other
+writers for these same actuators before enabling AUTO. Separate D-Bus instance
+numbers prevent a name collision, not two programs operating the same switch.
+The bridge provides no cross-host lock or arbitration with another HA caller.
+
+`ENABLE_CONTROL=False` disables AUTO decisions, not explicit manual requests or
+the shutdown close. Manual ON intentionally bypasses the level/stale policy;
+only use it under direct operator supervision. A missing or invalid level never
+renews the original monotonic freshness deadline. Once it expires, AUTO asks for
+OFF if the valve's best-known state differs; an entirely unknown initial valve
+state is not commanded blindly. An HA service acknowledgement is not proof of
+physical closure: check subsequent switch telemetry and the physical interlock.
+
+This component must not write ESS setpoints, charger controls, thermostat
+settings, or unrelated relays. Inverter/dashboards consume its telemetry;
+actuation belongs through the owned `/Mode` interface. No archived governance
+service enforces these boundaries. Deterministic tests cover stale recovery,
+manual priority and queued-command compensation; device acceptance remains a
+separate check.
 
 ## Conflict with native "Pump start/stop"
 

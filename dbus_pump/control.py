@@ -80,6 +80,11 @@ class ValveController:
 
         # AUTO
         if stale:
+            # The safety close is a real policy transition. Forget the previous
+            # open latch so recovery in the hysteresis band cannot reopen it.
+            if self._desired:
+                self._desired = False
+                self._last_transition = now
             return False, "stale-close"
 
         if level is not None and level <= self.start_value:

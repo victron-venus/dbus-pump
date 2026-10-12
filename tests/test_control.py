@@ -131,3 +131,34 @@ def test_invalid_thresholds_rejected(start, stop):
 
 def test_mode_constants_match_victron():
     assert (MODE_AUTO, MODE_ON, MODE_OFF) == (0, 1, 2)
+
+
+def test_recovery_in_hysteresis_band_does_not_reopen_after_stale_close(clock):
+    controller = make(clock)
+    assert controller.update(20.0, fresh=True) == (True, "auto-open")
+    clock.advance(121)
+    assert controller.update(None, fresh=False) == (False, "stale-close")
+    clock.advance(1)
+    assert controller.update(50.0, fresh=True) == (False, "hold")
+
+
+def test_recovery_below_start_observes_interval_after_stale_close(clock):
+    controller = make(clock)
+    assert controller.update(20.0, fresh=True) == (True, "auto-open")
+    clock.advance(121)
+    assert controller.update(None, fresh=False) == (False, "stale-close")
+    clock.advance(1)
+    assert controller.update(20.0, fresh=True) == (False, "hold")
+    clock.advance(60)
+    assert controller.update(20.0, fresh=True) == (True, "auto-open")
+
+
+def test_repeated_stale_close_does_not_extend_reopen_interval(clock):
+    controller = make(clock)
+    controller.update(20.0, fresh=True)
+    clock.advance(121)
+    assert controller.update(None, fresh=False) == (False, "stale-close")
+    clock.advance(59)
+    assert controller.update(None, fresh=False) == (False, "stale-close")
+    clock.advance(1)
+    assert controller.update(20.0, fresh=True) == (True, "auto-open")
