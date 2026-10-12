@@ -230,7 +230,7 @@ the bridge solely as a non-actuating health probe.
 - **Hysteresis**: valve opens at ≤ `VALVE_START_VALUE`, closes at ≥
   `VALVE_STOP_VALUE`. No oscillation around one threshold.
 - **Stale sensor fail-safe**: no fresh level reading within
-  `SENSOR_STALE_TIMEOUT` → valve forced CLOSED, tank `/Status` = 2 (fault).
+  `SENSOR_STALE_TIMEOUT` → AUTO requests valve CLOSED; tank `/Status` = 4 (unknown sensor).
   After a stale close, a fresh level inside the hysteresis band keeps the valve
   closed. Reopening requires a fresh level at or below `VALVE_START_VALUE` and
   the normal `MIN_SWITCH_INTERVAL` since the close. Repeated stale observations
