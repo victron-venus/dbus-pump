@@ -1,6 +1,6 @@
 {
   "observed_on": "2026-10-12",
-  "base_commit": "852ac7247eccbea19a4b9ff1fbd37d8a7850083e",
+  "base_commit": "974fd1f4fc33c2c9ea0e6a9f78e8a070041916e9",
   "source_identity": "Exact measured source is identified by SHA-256 per file below; the base commit plus reviewed PR changes identify the worktree.",
   "platform": "macOS-26.7-arm64-arm-64bit",
   "python": "3.12.13",
@@ -34,6 +34,7 @@
     "tests/test_control.py",
     "tests/test_ha_client.py",
     "tests/test_invalid_sensor.py",
+    "tests/test_package_repeatability.py",
     "tests/test_registration.py",
     "tests/test_service.py",
     "tests/test_update.py",

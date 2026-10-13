@@ -1,5 +1,7 @@
 # dbus-pump
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15438/badge)](https://www.bestpractices.dev/projects/15438)
+
 Home-Assistant-backed water tank/pump/valve bridge for Victron Venus OS.
 
 Runs **on the Cerbo GX** and exposes a Home Assistant water system as native

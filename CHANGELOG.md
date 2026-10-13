@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [0.1.6] - Development line
 
 ### Fixed
+- Preserve the stale-close valve latch while fresh tank readings recover inside
+  the hysteresis band; respect the existing minimum interval before reopening
+  below the start threshold.
 - Give the Home Assistant bridge its own `dbus-pump-ha` supervisor and log names,
   avoiding the native Venus OS pump service restored at every boot.
 - Install one persistent, idempotent boot hook with bounded supervisor retries;
