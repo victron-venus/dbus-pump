@@ -1,6 +1,6 @@
 {
   "python": "3.12.13",
-  "base_commit": "6e283b6ddd22e14620ee57770b094ef6c86a18d3",
+  "base_commit": "f18209856cd2991c5858afe472b0901634d999aa",
   "method": "Two independent archive writer invocations using the actual tracked native package inventory from this reviewed worktree, identified by input SHA-256 below; no installation, deployment or release publication.",
   "archive_sha256": "97b6459de7d8077e2e9edc7ade2e466f2a4c3a1daef787575fc1cf99914c343a",
   "archive_bytes": 41194,

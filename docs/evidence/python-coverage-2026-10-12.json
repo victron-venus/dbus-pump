@@ -1,6 +1,6 @@
 {
   "observed_on": "2026-10-12",
-  "base_commit": "6e283b6ddd22e14620ee57770b094ef6c86a18d3",
+  "base_commit": "f18209856cd2991c5858afe472b0901634d999aa",
   "source_identity": "Exact measured source is identified by SHA-256 per file below; the base commit plus reviewed PR changes identify the worktree.",
   "platform": "macOS-26.7-arm64-arm-64bit",
   "python": "3.12.13",
