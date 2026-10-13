@@ -28,7 +28,7 @@ uv sync --locked --only-group build --no-install-workspace --no-install-local --
 uv sync --locked --extra dev --group build --no-build-isolation --python 3.12.13
 .venv/bin/python -m ruff check .
 .venv/bin/python -m ruff format --check .
-.venv/bin/python -m pytest --cov=. --cov-report=term-missing --cov-fail-under=60
+.venv/bin/python -m pytest tests/ .github/release-tests/ .github/workflow-tests/ --cov --cov-report=term-missing --cov-fail-under=80
 ```
 
 The `build` group installs wheel-only build tools before the local package is built without an isolated dependency resolver. To build a wheel with that environment, run `.venv/bin/python -m build --no-isolation --wheel`.
@@ -41,3 +41,15 @@ Automated tests use mocks or controlled fixtures where available. A passing unit
 - [local_config.example.py](local_config.example.py)
 
 See [README.md](README.md) for acquisition, configuration and usage, and [the evidence index](docs/openssf-evidence.md) for the public development-process references.
+
+## Oversight and evidence
+
+Follow [governance and role responsibilities](GOVERNANCE.md), the
+[Code of Conduct](CODE_OF_CONDUCT.md), and the mandatory test policy in
+[quality evidence](docs/quality-evidence.md). The [roadmap](ROADMAP.md) and
+[security assurance argument](docs/security-assurance.md) describe current work
+and the evidence required for changes to a trust boundary.
+
+For package capture or image construction, use the documented
+[`DESTDIR` staging installer](docs/staged-installation.md). It installs into an
+explicit private staging root without invoking SetupHelper, supervisors or devices.

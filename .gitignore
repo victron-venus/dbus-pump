@@ -20,3 +20,7 @@ bandit-results.json
 .release-plan.json
 .release-inputs.json
 release-assets/
+
+# Local coverage reports (dated evidence is under docs/evidence)
+coverage.xml
+.coverage.*

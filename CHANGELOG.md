@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [0.1.6] - Development line
 
 ### Fixed
+- Preserve the stale-close valve latch while fresh tank readings recover inside
+  the hysteresis band; respect the existing minimum interval before reopening
+  below the start threshold.
 - Give the Home Assistant bridge its own `dbus-pump-ha` supervisor and log names,
   avoiding the native Venus OS pump service restored at every boot.
 - Install one persistent, idempotent boot hook with bounded supervisor retries;
@@ -18,6 +21,21 @@ All notable changes to this project will be documented in this file.
   limits, including the unchanged shutdown valve-close behavior.
 
 ### Maintenance
+
+- Support explicit `DESTDIR` package staging and uninstall without live service actions, preserving operator-owned configuration.
+- Treat Python test warnings as failures and apply broad Python lint checks with documented, narrow compatibility exceptions.
+
+- Enable isolated keyless release signing and authenticated verification of the complete artifact inventory and reviewed source archive.
+
+- Use SPDX license metadata and include LICENSE explicitly, removing the
+  setuptools deprecation warning without changing the project license.
+
+- Measure application code and release helpers with one
+  explicit Python source inventory and an 80% statement-coverage gate.
+- Exercise deterministic native packaging, untracked-file exclusion, required
+  inputs, version validation and refusal to reuse stale output directories.
+- Document governance, conduct, roadmap, security assurance and dated quality
+  evidence, including the outstanding continuity requirement.
 
 - Record test and build dependencies in `uv.lock` for reproducible Python checks, preserving the existing locked runtime versions.
 - Separate manual callbacks and automatic valve commands from snapshot publication while preserving freshness deadlines and in-flight compensation.

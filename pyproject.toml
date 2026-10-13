@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,8 @@ name = "dbus-pump"
 version = "0.1.6"
 description = "Home-Assistant-backed water tank/pump/valve bridge for Victron Venus OS"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "requests>=2.31",
@@ -17,6 +18,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-cov",
+    "pyyaml==6.0.3",
     "ruff>=0.9",
 ]
 
@@ -28,10 +30,7 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-ignore = [
-    "E722",  # bare except tolerated, matches sibling services
-    "F841",
-]
+select = ["E", "F", "W", "I", "UP", "BLE", "ASYNC", "RUF"]
 
 [tool.pylint.messages_control]
 disable = [
@@ -42,8 +41,9 @@ disable = [
 ]
 
 [tool.pytest.ini_options]
+filterwarnings = ["error"]
 testpaths = ["tests"]
-addopts = "--cov=dbus_pump --cov-report=term-missing --cov-fail-under=60"
+addopts = "--cov --cov-report=term-missing --cov-fail-under=80"
 
 # Install wheel-only build tools before building the local package without build isolation.
 [dependency-groups]

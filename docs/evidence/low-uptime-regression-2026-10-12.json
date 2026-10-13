@@ -1,0 +1,14 @@
+{
+  "bug_fix": "3f9a8f06e4791ca6ddd7b31ee88bd8a10b4d57c5",
+  "before_commit": "77babaacd074f4d0167b9ab4f3916a82255567a4",
+  "test_added": "2026-10-12",
+  "test_file": "tests/test_control.py",
+  "test": "test_first_open_is_not_delayed_by_low_system_uptime",
+  "values": [
+    0.0,
+    1.0,
+    59.0
+  ],
+  "before_result": "3 failed: expected (True, auto-open), got (False, hold)",
+  "method": "Run the same added test against the original parent control.py in an isolated temporary import tree; no hardware, no historical service installation. Current-source result is recorded with the coverage suite."
+}

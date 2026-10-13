@@ -14,6 +14,8 @@
     "uv.lock",
     "README.md",
     "LICENSE",
-    ".python-version"
+    ".python-version",
+    "install.py",
+    "docs/staged-installation.md"
   ]
 }

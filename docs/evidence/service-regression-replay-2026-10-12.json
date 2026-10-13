@@ -1,0 +1,62 @@
+{
+  "observed_on": "2026-10-12",
+  "fix_commit": "6102c44a4437c15f057c600452bd747fb1119bfc",
+  "original_parent": "1c8b26f19f532ecb0619638930f7f2eed9108ce6",
+  "method": "Execute three unchanged current regression test functions against the exact original parent service module and current module in the off-device null-service context. Other project modules and source are not swapped.",
+  "historical_source_sha256": "ffd162ad4a2c9cb9800b9ce43d963c72778270c33149c198cc3f88b7de6c25f9",
+  "current_source_sha256": "007927a85a0eb89a6708afe3165a20fd459dd36307315926c24b50321a06638a",
+  "test_source_sha256": "ce69ee141dca90e75913c4138b1204a9c3eb21542d0b5a41ab68ff28e299a11e",
+  "results": [
+    {
+      "source": "before",
+      "test": "tests/test_service.py::test_service_names",
+      "result": "failed_expected_assertion",
+      "detail": [
+        "        ^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/Users/vmedvedev/victron/analysis/silver-delivery-20261012/work/dbus-pump-silver-orgs/tests/test_service.py\", line 18, in test_service_names",
+        "    assert s.tank.service_name == \"com.victronenergy.tank.ha_tank21\"",
+        "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "AssertionError"
+      ]
+    },
+    {
+      "source": "before",
+      "test": "tests/test_service.py::test_null_service_onchange_fires",
+      "result": "failed_expected_assertion",
+      "detail": [
+        "        ^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/Users/vmedvedev/victron/analysis/silver-delivery-20261012/work/dbus-pump-silver-orgs/tests/test_service.py\", line 97, in test_null_service_onchange_fires",
+        "    assert seen == [2]",
+        "           ^^^^^^^^^^^",
+        "AssertionError"
+      ]
+    },
+    {
+      "source": "before",
+      "test": "tests/test_service.py::test_update_tank_level_and_remaining",
+      "result": "failed_expected_assertion",
+      "detail": [
+        "        ^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/Users/vmedvedev/victron/analysis/silver-delivery-20261012/work/dbus-pump-silver-orgs/tests/test_service.py\", line 48, in test_update_tank_level_and_remaining",
+        "    assert s.tank.items[\"/Remaining\"] == 1.0",
+        "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "AssertionError"
+      ]
+    },
+    {
+      "source": "current",
+      "test": "tests/test_service.py::test_service_names",
+      "result": "passed"
+    },
+    {
+      "source": "current",
+      "test": "tests/test_service.py::test_null_service_onchange_fires",
+      "result": "passed"
+    },
+    {
+      "source": "current",
+      "test": "tests/test_service.py::test_update_tank_level_and_remaining",
+      "result": "passed"
+    }
+  ]
+}
