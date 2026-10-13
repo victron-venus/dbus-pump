@@ -1,9 +1,9 @@
 {
   "python": "3.12.13",
-  "base_commit": "974fd1f4fc33c2c9ea0e6a9f78e8a070041916e9",
+  "base_commit": "6e283b6ddd22e14620ee57770b094ef6c86a18d3",
   "method": "Two independent archive writer invocations using the actual tracked native package inventory from this reviewed worktree, identified by input SHA-256 below; no installation, deployment or release publication.",
-  "archive_sha256": "67e0cd50970076978a1d1a684ba4fb8391fda6d092e94e46f4846ac78b84cfb8",
-  "archive_bytes": 38744,
+  "archive_sha256": "97b6459de7d8077e2e9edc7ade2e466f2a4c3a1daef787575fc1cf99914c343a",
+  "archive_bytes": 41194,
   "matching_builds": 2,
   "inputs": [
     {
@@ -67,8 +67,18 @@
       "executable": false
     },
     {
+      "path": "docs/staged-installation.md",
+      "sha256": "e004a0ee6c22eca9e64d9e4f49ffec8f134f7c8ded8c5b8209193bad50151d60",
+      "executable": false
+    },
+    {
       "path": "gitHubInfo",
       "sha256": "7accd03a6c275a964efb6248fcaf39ffe1d6866df915ae372a80ac3d5b085080",
+      "executable": false
+    },
+    {
+      "path": "install.py",
+      "sha256": "c664cce5a8cc78e65db5d568c4f38380a48abc8ff5af6f4a6b5ac2febbcf382d",
       "executable": false
     },
     {
@@ -78,7 +88,7 @@
     },
     {
       "path": "pyproject.toml",
-      "sha256": "303aa0c64172f9083f50db318a1821dcff5e87e57b480863e333f30f9899c6b2",
+      "sha256": "ecbd3a7525e5ba840a9a9e829536d3748b68f2070a17cdc13f4d4972ddf3fa0d",
       "executable": false
     },
     {
@@ -98,12 +108,12 @@
     },
     {
       "path": "setup",
-      "sha256": "11316e29fc29b368abc29d74cdb9a29b22914d17ae275c22fc57ca04797f2b0f",
+      "sha256": "3f3ccffd8647cb1a49605d15a401c1f6c600f6012580fdebcf2c70fbbbda41c1",
       "executable": true
     },
     {
       "path": "update.sh",
-      "sha256": "d9d43c542382fabe9ddb35e41c4e685cce0daa71d8a3799f1b0e839d16e82ee0",
+      "sha256": "5e72231f9d9dcdd3acc8ea3fa7bca8cded7afaba30fe9c87f7e0611ab8f3d72c",
       "executable": true
     },
     {

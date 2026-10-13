@@ -1,0 +1,212 @@
+{
+  "observed_on": "2026-10-12",
+  "tool": "Bandit 1.9.2",
+  "scope": "Complete local source scan excluding generated output, environments and application/release/workflow test directories; security discovery fixtures remain scanned. All severity levels retained.",
+  "high": 0,
+  "medium": 0,
+  "low": 10,
+  "findings": [
+    {
+      "path": ".github/security-tests/test_bandit_discovery.py",
+      "line": 5,
+      "rule": "B404",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Test fixture executes the current interpreter with fixed module/arguments in an isolated temporary directory."
+    },
+    {
+      "path": ".github/security-tests/test_bandit_discovery.py",
+      "line": 55,
+      "rule": "B603",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Test fixture executes the current interpreter with fixed module/arguments in an isolated temporary directory."
+    },
+    {
+      "path": "dbus_pump/config.py",
+      "line": 78,
+      "rule": "B105",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Known invalid placeholder is a guard/example, not an operational credential."
+    },
+    {
+      "path": "local_config.example.py",
+      "line": 5,
+      "rule": "B105",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Known invalid placeholder is a guard/example, not an operational credential."
+    },
+    {
+      "path": "scripts/package_release.py",
+      "line": 10,
+      "rule": "B404",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Subprocess uses a fixed executable or current interpreter, explicit argv and checked return status, without a shell; inputs come from the trusted local checkout/validated version or produced build files."
+    },
+    {
+      "path": "scripts/package_release.py",
+      "line": 38,
+      "rule": "B603",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Subprocess uses a fixed executable or current interpreter, explicit argv and checked return status, without a shell; inputs come from the trusted local checkout/validated version or produced build files."
+    },
+    {
+      "path": "scripts/package_release.py",
+      "line": 69,
+      "rule": "B607",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Subprocess uses a fixed executable or current interpreter, explicit argv and checked return status, without a shell; inputs come from the trusted local checkout/validated version or produced build files."
+    },
+    {
+      "path": "scripts/package_release.py",
+      "line": 69,
+      "rule": "B603",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Subprocess uses a fixed executable or current interpreter, explicit argv and checked return status, without a shell; inputs come from the trusted local checkout/validated version or produced build files."
+    },
+    {
+      "path": "scripts/package_release.py",
+      "line": 149,
+      "rule": "B603",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Subprocess uses a fixed executable or current interpreter, explicit argv and checked return status, without a shell; inputs come from the trusted local checkout/validated version or produced build files."
+    },
+    {
+      "path": "scripts/package_release.py",
+      "line": 154,
+      "rule": "B603",
+      "severity": "LOW",
+      "disposition": "reviewed_no_exploitable_issue",
+      "reason": "Subprocess uses a fixed executable or current interpreter, explicit argv and checked return status, without a shell; inputs come from the trusted local checkout/validated version or produced build files."
+    }
+  ],
+  "source_files": [
+    {
+      "path": ".github/security-tests/test_bandit_discovery.py",
+      "sha256": "059fec15d1ac23fa173ce7ebf2685ef70fdc72a28fcbcae261afd44ac279ae65"
+    },
+    {
+      "path": "dbus_pump/__init__.py",
+      "sha256": "b6c689402497d62f761948a16b42e29cf0546e347264dd799e47cfbb5fb7f27e"
+    },
+    {
+      "path": "dbus_pump/__main__.py",
+      "sha256": "425608d43ec437ccf073e896e462d903760ef326c788955a393a3a296b282379"
+    },
+    {
+      "path": "dbus_pump/config.py",
+      "sha256": "2a8b635b3c3689f374567345f8911c62d5c6ba3e7ce11ce1332b83036f7e3c61"
+    },
+    {
+      "path": "dbus_pump/control.py",
+      "sha256": "6d600eb4dd68ac4c142adf5efd300f4ed74120a7972e4cc4145ae438b96f5f44"
+    },
+    {
+      "path": "dbus_pump/ha_client.py",
+      "sha256": "bfed19b2113efb6c5b51cb751e9fde445a1527abadcd69225243c1898d2bdb46"
+    },
+    {
+      "path": "dbus_pump/main.py",
+      "sha256": "05d16c83c26acde0a61cf2afbb7c6a94cb79962a134c3cab327d889c27eadee7"
+    },
+    {
+      "path": "dbus_pump/service.py",
+      "sha256": "007927a85a0eb89a6708afe3165a20fd459dd36307315926c24b50321a06638a"
+    },
+    {
+      "path": "dbus_pump/worker.py",
+      "sha256": "e9f430b20077c3e3c74960b55bdaefc83ed7f83115dc650158b0a758cc3d702b"
+    },
+    {
+      "path": "install.py",
+      "sha256": "c664cce5a8cc78e65db5d568c4f38380a48abc8ff5af6f4a6b5ac2febbcf382d"
+    },
+    {
+      "path": "local_config.example.py",
+      "sha256": "dc47900ebe08b455e8f09f44cea3ff4f7b472a6baf602367c0026c6774d91287"
+    },
+    {
+      "path": "scripts/change_scope.py",
+      "sha256": "174e460603f2efe87cf6e5cde1b8682f0a0f2d35c4c129aafe3cde8801299be8"
+    },
+    {
+      "path": "scripts/package_release.py",
+      "sha256": "ca6edc85adcaaf978aad7773c8516e261285d912a6cae17b13ccb06bb883e7ba"
+    },
+    {
+      "path": "scripts/prepare_version.py",
+      "sha256": "6e9c4a9c2fe4e3c7e4954d9725ed02fb2f179c5771ef843a653ef4f065fae0e2"
+    },
+    {
+      "path": "scripts/release.py",
+      "sha256": "2584b05d01ef82b48f2ef75dc5d8e649de09df591fc6121097b2388f65a7b4eb"
+    },
+    {
+      "path": "scripts/release_container_labels.py",
+      "sha256": "8030cb28474e577a97ff9f406acfe75bf6b1d423dc144173667becc0605bec9f"
+    },
+    {
+      "path": "scripts/release_control.py",
+      "sha256": "1700427ea38864763ca223bca4f3074456ad80d52cc1bf3e63ed6929ff29a7ff"
+    },
+    {
+      "path": "scripts/release_signing.py",
+      "sha256": "29a4cb3d1e6deb913d501965292664b2b3a7b44a3f6fe297b121c87eb73f0d4b"
+    },
+    {
+      "path": "scripts/release_state.py",
+      "sha256": "7c9717ce50dd10695dbc74f4fa876a5143c83f49e4f9a6bca77190916fef3641"
+    },
+    {
+      "path": "scripts/release_validation.py",
+      "sha256": "d87f110445cd6618aff991ff126218de47154afc7a878aa9ba37621b800ece42"
+    },
+    {
+      "path": "scripts/release_version_adapter.py",
+      "sha256": "2a520b4333d681cfda32437c8f5f00050839dabdcdd29527d1b1346f43fd5792"
+    },
+    {
+      "path": "scripts/release_versioned.py",
+      "sha256": "9461377600faf2010804eaa943b6283674457b0d5c9a55db6b2f11d0156acb75"
+    },
+    {
+      "path": "scripts/runner_preflight.py",
+      "sha256": "c0460d162e83d2fa515615452c59567186d05f3ef26dddaa68735352bbcedf80"
+    },
+    {
+      "path": "scripts/stage_release_assets.py",
+      "sha256": "ec308cd5346b5e55860336dba0352e426284b674d9f6f4ae7f5bd80e11dd9003"
+    },
+    {
+      "path": "scripts/validate_scorecard_json.py",
+      "sha256": "85129e43cd1ccf6316530564bd7190e8924a52f01687c2bd6e0212bf9d91c352"
+    },
+    {
+      "path": "scripts/version_plan.py",
+      "sha256": "5ab44b0750a135f291417825b18536e0256938d8b36f87918ab5e35ce1b49a39"
+    },
+    {
+      "path": "scripts/version_receipt.py",
+      "sha256": "da2d97f686d8d41ae73715fdbfbcbafc31f23389152006cc2519fb9d56902169"
+    },
+    {
+      "path": "scripts/workflow_contracts.py",
+      "sha256": "5332b472b01df64077e7a474b7e5171ba48d8cfa2ae1b0b4d7572024effd248d"
+    },
+    {
+      "path": "scripts/write_binary_build_metadata.py",
+      "sha256": "d09d1642bb675b585ab3a69384efb87ff48dc3a37b2c04cadedb693cf5113c41"
+    },
+    {
+      "path": "scripts/write_web_build_metadata.py",
+      "sha256": "1d962dfedb82feada5a062f2e075e895deb687d79ad982596d915ad6bef668f0"
+    }
+  ]
+}

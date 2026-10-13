@@ -17,9 +17,10 @@ An application-only percentage must never be described as whole-project coverage
 
 ## Measurement on 2026-10-12
 
-84.31% (3412 of 4047 statements), covering all 24 applicable Python source files; 492 tests passed across the full suite and the added low-uptime regression.
+89.99% (4261 of 4735 statements), covering all 28 applicable Python source files; 667 tests passed with Python warnings treated as errors.
 The [machine-readable inventory](evidence/python-coverage-2026-10-12.json)
 records exact file hashes, tools, commands, missing statements and exclusions.
+The new signature verifier is included: 98 of 111 statements (88.29%).
 `.coveragerc` explicitly enumerates non-package source directories and enables
 child-process measurement; otherwise never-imported helpers and real D-Bus
 fixtures can silently disappear from the reported scope. CI and scripts/ci.sh
@@ -69,3 +70,21 @@ new cases fail before the fix and pass on current source; the test was added on
 The [Python package build](evidence/python-package-build-2026-10-12.json)
 produced a wheel and sdist without build warnings; both passed strict Twine
 metadata checks. This is one-build validity evidence, not byte reproducibility.
+
+## Warning policy
+
+Python test warnings are errors (`filterwarnings = error`), including dependency
+deprecations and resource warnings; no blanket runtime-warning suppression is
+configured. Ruff enables error, undefined-name, warning, import, upgrade, blind
+exception, async and Ruff-specific diagnostics for application code. Generated
+release components retain the reviewed toolkit's configuration and upstream
+checks. A narrow exception must identify an unavoidable protocol or compatibility
+requirement; a new warning is not fixed by dropping it from the report.
+
+The [additional defect-level history review](evidence/defect-level-review-2026-10-12.json)
+separates distinct early runtime, installer and CI failures, and identifies the
+remaining compound-change groups. It is not a percentage inferred from commit
+counts.
+The [service regression replay](evidence/service-regression-replay-2026-10-12.json)
+executes three unchanged current tests against the original pre-fix module:
+all three fail the intended assertion before the fix and pass on current source.

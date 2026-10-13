@@ -1,0 +1,413 @@
+{
+  "observed_on": "2026-10-12",
+  "period_start": "2026-04-12",
+  "period_end": "2026-10-12",
+  "scope": "Expansion of missed/compound historical fixes; supplements full commit inventory. Multiple distinct defects are separated where the patch demonstrates different failure causes. Candidate test paths do not themselves establish a numerator.",
+  "expanded_defects": [
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "module-entry-point",
+      "description": "python -m dbus_pump lacked an entry point",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "glib-initialization",
+      "description": "Use the supported GLib import and initialize its D-Bus main loop before creating services",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "private-bus-per-service",
+      "description": "Publishing several / object paths on one D-Bus connection failed",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": "tests/test_registration.py::test_native_group_registers_complete_paths_once_on_private_buses",
+      "candidate_exists": true,
+      "verification": "Historical fix behavior reviewed; later test needs parent-fail replay/precise assertion review before numerator inclusion.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "legal-bus-name",
+      "description": "A numeric dotted bus-name component was invalid",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": "tests/test_service.py::test_service_names",
+      "candidate_exists": true,
+      "verification": "Three unchanged current test functions were executed against the original parent service module: each fails its intended assertion before the fix and passes on current source.",
+      "numerator_counted": true,
+      "replay_evidence": "service-regression-replay-2026-10-12.json"
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "mode-callback-signature",
+      "description": "The incorrect onchange keyword and callback arity were incompatible with vedbus",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": "tests/test_service.py::test_null_service_onchange_fires",
+      "candidate_exists": true,
+      "verification": "Three unchanged current test functions were executed against the original parent service module: each fails its intended assertion before the fix and passes on current source.",
+      "numerator_counted": true,
+      "replay_evidence": "service-regression-replay-2026-10-12.json"
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "capacity-api",
+      "description": "Real VeDbusService lacks the mock-only items attribute",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": "tests/test_service.py::test_update_tank_level_and_remaining",
+      "candidate_exists": true,
+      "verification": "Three unchanged current test functions were executed against the original parent service module: each fails its intended assertion before the fix and passes on current source.",
+      "numerator_counted": true,
+      "replay_evidence": "service-regression-replay-2026-10-12.json"
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "stderr-log-redirection",
+      "description": "Service stderr was not connected to multilog",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "defect": "legacy-service-directory",
+      "description": "A stale real /service directory prevented the intended service symlink",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "patch_sha256": "f2c5e8fc7d8715d3a6f598fedf4569d6c14d8db637e03e7dd5364603618f0190",
+      "current_regression_candidate": "tests/test_update.py::test_unexpected_layout_is_rejected_before_stopping_or_replacing",
+      "candidate_exists": true,
+      "verification": "Historical fix behavior reviewed; later test needs parent-fail replay/precise assertion review before numerator inclusion.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "9d09dd14cd8cf96305bdfe83bfaf7a97c6d9393e",
+      "defect": "scorecard-external-billing",
+      "description": "The configured security workflow depended on a registry image requiring billing",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/9d09dd14cd8cf96305bdfe83bfaf7a97c6d9393e",
+      "patch_sha256": "ff497f44f8f45e81e0a888ab0c958c1b37473498fae4a60e042e1f35619f0044",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "1c8b26f19f532ecb0619638930f7f2eed9108ce6",
+      "defect": "setuptools-discovery",
+      "description": "Setuptools package discovery selected unintended top-level packages",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/1c8b26f19f532ecb0619638930f7f2eed9108ce6",
+      "patch_sha256": "d736cba05fc34a280fca5c6ccbd6cee7b0572777efafcf2b56796550fb332eb8",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "377a323e63f470f8ddba60f64d1e9a195addefe0",
+      "defect": "boot-persistence",
+      "description": "The runtime /service link disappeared on reboot",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/377a323e63f470f8ddba60f64d1e9a195addefe0",
+      "patch_sha256": "9fcaab081c1bc2886b2864eaa46195cce00f740693de916098cc93d7365f5193",
+      "current_regression_candidate": "tests/test_update.py::test_repeated_in_place_updates_preserve_live_supervisors_and_boot",
+      "candidate_exists": true,
+      "verification": "Historical fix behavior reviewed; later test needs parent-fail replay/precise assertion review before numerator inclusion.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "00f0b3c7f6507664d81a07d64b233d915a414996",
+      "defect": "legacy-opt-resurrection",
+      "description": "Legacy firmware /opt startup could resurrect obsolete code",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/00f0b3c7f6507664d81a07d64b233d915a414996",
+      "patch_sha256": "cfa5df83ceb26b843f08e1f58b6e4621960ea0af6d5b45a4349fe282d8550d1e",
+      "current_regression_candidate": "tests/test_update.py::test_native_firmware_service_and_payload_survive_install_and_boot",
+      "candidate_exists": true,
+      "verification": "Historical fix behavior reviewed; later test needs parent-fail replay/precise assertion review before numerator inclusion.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "00f0b3c7f6507664d81a07d64b233d915a414996",
+      "defect": "persistent-down-flags",
+      "description": "Retained down files suppressed service startup",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/00f0b3c7f6507664d81a07d64b233d915a414996",
+      "patch_sha256": "cfa5df83ceb26b843f08e1f58b6e4621960ea0af6d5b45a4349fe282d8550d1e",
+      "current_regression_candidate": "tests/test_update.py::test_boot_retries_transient_supervisor_failures_and_clears_owned_down_flags",
+      "candidate_exists": true,
+      "verification": "Historical fix behavior reviewed; later test needs parent-fail replay/precise assertion review before numerator inclusion.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "00f0b3c7f6507664d81a07d64b233d915a414996",
+      "defect": "existing-boot-block",
+      "description": "An already installed persistence block did not receive fixes",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/00f0b3c7f6507664d81a07d64b233d915a414996",
+      "patch_sha256": "cfa5df83ceb26b843f08e1f58b6e4621960ea0af6d5b45a4349fe282d8550d1e",
+      "current_regression_candidate": "tests/test_update.py::test_repeated_in_place_updates_preserve_live_supervisors_and_boot",
+      "candidate_exists": true,
+      "verification": "Historical fix behavior reviewed; later test needs parent-fail replay/precise assertion review before numerator inclusion.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "00f0b3c7f6507664d81a07d64b233d915a414996",
+      "defect": "deployment-readiness",
+      "description": "Deployment status checks could accept stale heartbeat/service state",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/00f0b3c7f6507664d81a07d64b233d915a414996",
+      "patch_sha256": "cfa5df83ceb26b843f08e1f58b6e4621960ea0af6d5b45a4349fe282d8550d1e",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "96a0ad162435578e3217796e6ac39ba33962046a",
+      "defect": "deployment-build-output",
+      "description": "Deployment tarball included local build output",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/96a0ad162435578e3217796e6ac39ba33962046a",
+      "patch_sha256": "26a11b479993089b04ee53196ea4735e34ac3138afb870e8d8cc1c5ff08fa446",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "15657514ecd5da8fcd30d23861b2a35d6c7d27e9",
+      "defect": "stale-check-attempt",
+      "description": "Auto-merge considered previous check attempts",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/15657514ecd5da8fcd30d23861b2a35d6c7d27e9",
+      "patch_sha256": "6ced755c20fc1f46cfaa3622af5ae0db50f3517a2159be2ce51e178aa1fce7e1",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "de807dfb06a7d57d42ead8073b04118515f3ab7d",
+      "defect": "trusted-bot-identity",
+      "description": "Auto-merge misidentified trusted bot identities",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/de807dfb06a7d57d42ead8073b04118515f3ab7d",
+      "patch_sha256": "f4eecb62fe3905ece45f2a3e817ec3351b0768184a64b3f5baa6e6a7cb6fc334",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "29257295bacfaa4ff5fb66a21c7f3eac77cfe474",
+      "defect": "dismissed-current-review",
+      "description": "Dismissed approvals were not refreshed for the current head",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/29257295bacfaa4ff5fb66a21c7f3eac77cfe474",
+      "patch_sha256": "e38fbdae30d38353ef14b68844c46d5470d8e33026a284022858278c2e6e9222",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    },
+    {
+      "fix": "3b5feb602532f17950d082efa9b7fc0681fccf71",
+      "defect": "venus-runtime-compatibility",
+      "description": "Native service/package dependencies were inconsistent with Python3.12",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/3b5feb602532f17950d082efa9b7fc0681fccf71",
+      "patch_sha256": "06362ff92677a634bf07d62fbe75e318bd87c0f7bdc92db4ecba484122dcec24",
+      "current_regression_candidate": null,
+      "candidate_exists": false,
+      "verification": "No qualifying automated regression established in this pass.",
+      "numerator_counted": false
+    }
+  ],
+  "reviewed_nondefect_changes": [
+    {
+      "commit_prefix": "4bc6861f92",
+      "reason": "Equivalent nested-to-combined context manager refactor; acquisition/close order retained."
+    },
+    {
+      "commit_prefix": "84b7d87f56",
+      "reason": "Equivalent named shell variables and flattened predicates; no behavior defect established."
+    },
+    {
+      "commit_prefix": "934002951b",
+      "reason": "Command reconciliation extracted from telemetry update without a new defect claim."
+    },
+    {
+      "commit_prefix": "80a1412f3d",
+      "reason": "Test diagnostics and parametrization; no production behavior change."
+    },
+    {
+      "commit_prefix": "04dae9998f",
+      "reason": "Locked-build adoption and ASCII-equivalent regex simplification; no runtime bug demonstrated."
+    },
+    {
+      "commit_prefix": "9d8ef8919e",
+      "reason": "New advisory autofix automation."
+    },
+    {
+      "commit_prefix": "51e2d71fa4",
+      "reason": "New outbound audit hardening."
+    },
+    {
+      "commit_prefix": "9d09dd14cd",
+      "reason": "Historical CI failure retained explicitly as a defect above, not excluded merely because it is a process failure."
+    }
+  ],
+  "remaining_compound_groups": [
+    {
+      "commit_prefix": "80f01c31a5",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    },
+    {
+      "commit_prefix": "a29f114b70",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    },
+    {
+      "commit_prefix": "7f362b425d",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    },
+    {
+      "commit_prefix": "a1e321ffc3",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    },
+    {
+      "commit_prefix": "80555971bb",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    },
+    {
+      "commit_prefix": "d92176b147",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    },
+    {
+      "commit_prefix": "b407e9b29b",
+      "reason": "Existing source/test pair verified, but distinct bug cardinality versus additional hardening/feature cases needs semantic decomposition."
+    }
+  ],
+  "criterion_status": "not_yet_verified",
+  "why_no_ratio": "Several compound release/tooling changes combine fixes and new validation features. Their remaining cardinality prevents a defensible complete defect denominator. No percentage is inferred from tested commit-pair count.",
+  "compound_defects_reviewed": [
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-crlf",
+      "description": "CRLF source bytes were not preserved by release-note verification",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_crlf_notes_preserve_source_byte_verification",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-fenced-headings",
+      "description": "Headings inside fenced examples could satisfy or split release guidance",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_fenced_guidance_cannot_satisfy_real_sections",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-comments",
+      "description": "Invisible HTML comments could satisfy visible release guidance",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_comment_only_guidance_is_rejected",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-section-boundaries",
+      "description": "Guidance could leak from a higher-level appendix into the selected release",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_higher_level_appendix_cannot_supply_version_guidance",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-empty-containers",
+      "description": "Empty Markdown list/quote containers could satisfy required guidance",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_empty_markdown_containers_are_not_release_guidance",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-closing-hashes",
+      "description": "Standard ATX closing hashes prevented selecting valid version/guidance headings",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_closing_hashes_select_version_and_required_guidance",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-setext-ambiguity",
+      "description": "Setext appendix headings could provide misleading selected-release guidance",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_setext_appendices_cannot_supply_release_guidance",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "notes-before-write",
+      "description": "Missing or invalid notes were validated after publication side effects",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_release_notes.py::test_missing_notes_abort_before_mutation",
+      "test_added_in_fix_commit": true,
+      "test_exists_now": true,
+      "numerator_counted": true,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    },
+    {
+      "fix": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "defect": "receipt-unbounded-read",
+      "description": "Oversized receipt input could be fully buffered before rejection",
+      "fix_url": "https://github.com/victron-venus/dbus-pump/commit/80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "current_regression": ".github/release-tests/test_version_receipt.py::test_oversized_receipt_reads_only_a_bounded_prefix",
+      "test_added_in_fix_commit": false,
+      "test_exists_now": true,
+      "numerator_counted": false,
+      "verification": "Historical source change and added negative assertion reviewed; no individual original-parent replay for this row."
+    }
+  ],
+  "resolved_compound_group_notes": [
+    {
+      "commit_prefix": "a0fed5adba",
+      "conclusion": "The release fixture imported a duplicate module identity, mismatching exception/fake types; no newly added test for this fixture defect identified."
+    },
+    {
+      "commit_prefix": "6cb89233b4",
+      "conclusion": "The worker fixture erased injected exception types by rewrapping RuntimeError; no dedicated assertion for fixture identity identified."
+    },
+    {
+      "commit_prefix": "6ddec90760",
+      "conclusion": "Introduced locked wheel-only CI and enabled security reporting; no distinct application defect established from the patch."
+    }
+  ],
+  "verified_regression_defects_in_this_supplement": 11
+}

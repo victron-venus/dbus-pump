@@ -10,14 +10,61 @@
   "assets": [
     {
       "name": "dbus_pump-0.1.6-py3-none-any.whl",
-      "sha256": "f167b7229bb8b36f6154d0a6b131fcc14ef277a210dfd6b91ef1f4dfbe894576",
-      "bytes": 25129
+      "sha256": "d9933d84a65b3ac8085cf25964953e13b1ad7555bc3b4b60a8166b1a4689654e",
+      "bytes": 25184
     },
     {
       "name": "dbus_pump-0.1.6.tar.gz",
-      "sha256": "823efca132b4710270178100d3dee6581c8ead866545cdc6c68d39f05a63109d",
-      "bytes": 50477
+      "sha256": "a5129e05768b46d21565499a1af7fdbd6aca48315e52c1b442be94d1b64c7b76",
+      "bytes": 51700
     }
   ],
-  "source_commit": "974fd1f4fc33c2c9ea0e6a9f78e8a070041916e9"
+  "source_git_tree": "7b2a477cb1eeb0af57ea1b98650b6b85d9565c0b",
+  "source_identity": "Built from an isolated git archive of the exact staged tree; package inputs are additionally identified by SHA-256 below.",
+  "source_files": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "ecbd3a7525e5ba840a9a9e829536d3748b68f2070a17cdc13f4d4972ddf3fa0d"
+    },
+    {
+      "path": "README.md",
+      "sha256": "47a47388d14f0e12a6ef8a62466559ab857f261701ca8c74b106779fb31991d9"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "addc09dabba890f23b3fc54ec759ab41721943028481ba1127a37832149d4ce0"
+    },
+    {
+      "path": "dbus_pump/__init__.py",
+      "sha256": "b6c689402497d62f761948a16b42e29cf0546e347264dd799e47cfbb5fb7f27e"
+    },
+    {
+      "path": "dbus_pump/__main__.py",
+      "sha256": "425608d43ec437ccf073e896e462d903760ef326c788955a393a3a296b282379"
+    },
+    {
+      "path": "dbus_pump/config.py",
+      "sha256": "2a8b635b3c3689f374567345f8911c62d5c6ba3e7ce11ce1332b83036f7e3c61"
+    },
+    {
+      "path": "dbus_pump/control.py",
+      "sha256": "6d600eb4dd68ac4c142adf5efd300f4ed74120a7972e4cc4145ae438b96f5f44"
+    },
+    {
+      "path": "dbus_pump/ha_client.py",
+      "sha256": "bfed19b2113efb6c5b51cb751e9fde445a1527abadcd69225243c1898d2bdb46"
+    },
+    {
+      "path": "dbus_pump/main.py",
+      "sha256": "05d16c83c26acde0a61cf2afbb7c6a94cb79962a134c3cab327d889c27eadee7"
+    },
+    {
+      "path": "dbus_pump/service.py",
+      "sha256": "007927a85a0eb89a6708afe3165a20fd459dd36307315926c24b50321a06638a"
+    },
+    {
+      "path": "dbus_pump/worker.py",
+      "sha256": "e9f430b20077c3e3c74960b55bdaefc83ed7f83115dc650158b0a758cc3d702b"
+    }
+  ]
 }

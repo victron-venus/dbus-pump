@@ -22,6 +22,11 @@ All notable changes to this project will be documented in this file.
 
 ### Maintenance
 
+- Support explicit `DESTDIR` package staging and uninstall without live service actions, preserving operator-owned configuration.
+- Treat Python test warnings as failures and apply broad Python lint checks with documented, narrow compatibility exceptions.
+
+- Enable isolated keyless release signing and authenticated verification of the complete artifact inventory and reviewed source archive.
+
 - Use SPDX license metadata and include LICENSE explicitly, removing the
   setuptools deprecation warning without changing the project license.
 

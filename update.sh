@@ -16,6 +16,11 @@
 set -eu
 
 SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Staging never reaches firmware checks or service activation below.
+if [ -n "${DESTDIR:-}" ]; then
+    exec python3 "$SRC_DIR/install.py" install
+fi
 INSTALL_DIR="${1:-/data/dbus-pump}"
 
 # Unit commands and boot hooks use this canonical persistent location.
@@ -28,7 +33,7 @@ fi
 LOCAL_ONLY="local_config.py"
 
 # Runtime items shipped at the repo root and installed at INSTALL_DIR root.
-RUNTIME_ITEMS="update.sh boot.sh restart.sh dbus_pump version setup gitHubInfo local_config.example.py"
+RUNTIME_ITEMS="update.sh install.py boot.sh restart.sh dbus_pump version setup gitHubInfo local_config.example.py"
 
 # Flat-file leftovers that must never survive an update (we run `python3 -m
 # dbus_pump`; a stale root main.py would shadow the package).

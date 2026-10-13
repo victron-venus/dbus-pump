@@ -30,10 +30,7 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-ignore = [
-    "E722",  # bare except tolerated, matches sibling services
-    "F841",
-]
+select = ["E", "F", "W", "I", "UP", "BLE", "ASYNC", "RUF"]
 
 [tool.pylint.messages_control]
 disable = [
@@ -44,6 +41,7 @@ disable = [
 ]
 
 [tool.pytest.ini_options]
+filterwarnings = ["error"]
 testpaths = ["tests"]
 addopts = "--cov --cov-report=term-missing --cov-fail-under=80"
 
