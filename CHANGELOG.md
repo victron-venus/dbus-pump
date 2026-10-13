@@ -30,7 +30,7 @@ All notable changes to this project will be documented in this file.
 - Use SPDX license metadata and include LICENSE explicitly, removing the
   setuptools deprecation warning without changing the project license.
 
-- Measure application, release helpers with one
+- Measure application code and release helpers with one
   explicit Python source inventory and an 80% statement-coverage gate.
 - Exercise deterministic native packaging, untracked-file exclusion, required
   inputs, version validation and refusal to reuse stale output directories.

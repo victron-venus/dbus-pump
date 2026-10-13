@@ -18,8 +18,11 @@ safety certification.
   Evidence: dbus_pump/config.py, control.py, main.py and worker.py;
   tests/test_invalid_sensor.py, test_control.py and test_app_tick.py.
 - Claim: network failures do not silently authorize arbitrary operations.
-  Argument: the HA client scopes requests to configured entities and surfaces
-  failed operations. Evidence: dbus_pump/ha_client.py and tests/test_ha_client.py.
+  Argument: production callers pass configured entities to the HA client, which
+  forwards the supplied entity_id and surfaces failed operations. This trusts
+  administrator-controlled entity configuration; the client does not enforce an
+  entity allowlist. Evidence: dbus_pump/main.py, dbus_pump/ha_client.py and
+  tests/test_ha_client.py.
 - Claim: startup/update integration preserves the native Venus OS pump service.
   Evidence: tests/test_registration.py and test_update.py cover the supervised
   service/installation contract; physical hardware behavior is not inferred.
@@ -42,7 +45,7 @@ credential from Git revokes it. Use SECURITY.md for coordinated disclosure.
 
 The coverage and regression inventories support this argument only within their
 declared scope. Remaining OpenSSF obligations include verified continuity,
-a complete defect-level regression-history denominator and published signed
-release verification. The 2026-10-12 review found no GitHub issue/advisory reports,
+published signed-release verification and all-language coverage evidence.
+The defect-level regression review now records a conservative lower bound. The 2026-10-12 review found no GitHub issue/advisory reports,
 and the owner confirmed no outside-GitHub reports during the prior 12 months. Python coverage is
 measured in docs/quality-evidence.md; hardware and shell coverage are not implied. No Passing or Silver award is asserted here.
