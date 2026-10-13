@@ -1,0 +1,1116 @@
+{
+  "period_start": "2026-04-12",
+  "period_end": "2026-10-12",
+  "base_commit": "852ac7247eccbea19a4b9ff1fbd37d8a7850083e",
+  "method": "Full non-merge history is retained. Candidate discovery uses title terms fix/correct/preserve/recover/restore/harden/reject/prevent. Candidate discovery can omit differently titled fixes and overcount maintenance; therefore no all-fixes percentage is claimed. Entries marked reviewed have added regression assertions linked to the changed code. Dependency-only updates are not automatically counted as bug fixes. Additional content review includes fixes missed by title filtering and explicitly includes installation, CI authentication and dependency-lock defects. A commit can contain several defects; reviewed commit-pair counts are not the denominator of all corrected defects.",
+  "criterion_status": "not_yet_verified",
+  "reviewed_pairs": 18,
+  "candidate_pairs": [
+    {
+      "commit": "852ac7247eccbea19a4b9ff1fbd37d8a7850083e",
+      "title": "fix(ci): align Scorecard completeness guard with pinned action (#109)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/852ac7247eccbea19a4b9ff1fbd37d8a7850083e",
+      "changed_tests": [
+        "tests/test_validate_scorecard_json.py"
+      ],
+      "added_test_functions": [
+        "def test_every_default_check_is_required_and_experimental_checks_fail(self) -> None:"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "4e6f94bf274d3be5d22fb78247bfc7dea896f0a6",
+      "title": "fix: use authoritative HTTP statuses in release automation (#108)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/4e6f94bf274d3be5d22fb78247bfc7dea896f0a6",
+      "changed_tests": [
+        ".github/release-tests/test_github_missing_status.py",
+        ".github/release-tests/test_release_control.py",
+        ".github/release-tests/test_release_state_http.py",
+        ".github/release-tests/test_versioned_release.py"
+      ],
+      "added_test_functions": [
+        "def test_error_body_and_cli_message_cannot_authorize_absence(self):",
+        "def test_real_http_404_is_optional_regardless_of_error_prose(self):",
+        "def test_missing_headers_never_fall_back_to_error_prose(self):",
+        "def test_status_and_exit_code_must_agree(self):",
+        "def test_failed_post_is_not_replayed_and_raw_upload_never_means_missing(self):",
+        "def test_binary_and_empty_response_bytes_are_preserved(self):",
+        "def test_pagination_has_exact_json_boundaries_and_discards_partial_result(self):",
+        "def test_truncated_or_injected_page_boundaries_fail_closed(self):",
+        "def test_local_http_status_wins_over_gh_error_rendering(self):",
+        "def test_paginated_cli_normalizes_json_and_rejects_injected_page_headers(self):",
+        "def test_only_two_real_404_reads_initialize_an_absent_ledger(self):",
+        "def test_errors_cannot_initialize_or_replay_a_ledger_read(self):",
+        "def test_absent_headers_do_not_initialize_a_ledger(self):",
+        "def test_existing_branch_with_missing_file_is_not_reset(self):",
+        "def test_failed_cas_write_is_never_replayed(self):",
+        "def test_successful_cas_write_strips_headers(self):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "c35cdc33f2b5cf3d50ae361af468524d2d738ac4",
+      "title": "fix: keep stale-closed valve shut through hysteresis recovery (#106)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/c35cdc33f2b5cf3d50ae361af468524d2d738ac4",
+      "changed_tests": [
+        "tests/test_app_tick.py",
+        "tests/test_control.py"
+      ],
+      "added_test_functions": [
+        "def test_stale_close_stays_closed_when_fresh_level_recovers_in_band(monkeypatch):",
+        "def test_recovery_in_hysteresis_band_does_not_reopen_after_stale_close(clock):",
+        "def test_recovery_below_start_observes_interval_after_stale_close(clock):",
+        "def test_repeated_stale_close_does_not_extend_reopen_interval(clock):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "4bc6861f9285525ad8b13f664e67084323c21834",
+      "title": "Preserve archive context order with a single with statement (#101)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/4bc6861f9285525ad8b13f664e67084323c21834",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "9d8ef8919e472e550c07d77ac7bfa1a5f1b98d36",
+      "title": "ci: request CodeRabbit autofix after completed reviews (#95)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/9d8ef8919e472e550c07d77ac7bfa1a5f1b98d36",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "51e2d71fa4ba82a0122808389901ed0e00f3fca6",
+      "title": "[StepSecurity] ci: Harden GitHub Actions (#94)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/51e2d71fa4ba82a0122808389901ed0e00f3fca6",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "e4ba5be62749d3c06df6c1c557dd4946fd4c490d",
+      "title": "Fix Cerbo autostart without replacing the native pump service (#93)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/e4ba5be62749d3c06df6c1c557dd4946fd4c490d",
+      "changed_tests": [
+        "tests/test_update.py"
+      ],
+      "added_test_functions": [
+        "def test_native_firmware_service_and_payload_survive_install_and_boot(venus):",
+        "def test_owned_legacy_alias_migrates_without_replacing_live_directory_handles(venus):",
+        "def test_boot_deduplicates_only_an_exact_owned_legacy_alias(venus):",
+        "def test_boot_waits_for_service_parent_without_creating_global_root(venus):",
+        "def test_boot_missing_service_parent_fails_after_a_bounded_wait(venus):",
+        "def test_boot_retries_transient_supervisor_failures_and_clears_owned_down_flags(venus):",
+        "def test_boot_permanent_supervisor_failure_is_bounded_and_reported(venus):",
+        "def test_uninstall_removes_owned_alias_but_preserves_native_firmware(venus):",
+        "def test_uninstall_refuses_foreign_alias_without_service_commands(venus, tmp_path):",
+        "def test_uninstall_missing_supervisor_control_preserves_owned_and_native_links(venus):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "80555971bb1d4135ba8c55b32c63975491773f32",
+      "title": "security: harden code-scanning workflows and CI permissions (#87)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/80555971bb1d4135ba8c55b32c63975491773f32",
+      "changed_tests": [
+        ".github/workflow-tests/test_scorecard_workflow.py",
+        "tests/test_validate_scorecard_json.py"
+      ],
+      "added_test_functions": [
+        "def test_publishing_and_guarded_upload_contract(self):",
+        "def test_custom_run_in_publishing_job_is_rejected(self):",
+        "def test_validation_job_cannot_mint_publication_identity(self):",
+        "def test_artifact_must_be_from_this_workflow_run(self):",
+        "def test_upload_cannot_run_without_successful_completeness_guard(self):",
+        "def test_scan_must_preserve_both_original_formats(self):",
+        "def test_complete_clean_and_failing_checks_pass(self) -> None:",
+        "def test_upstream_packaging_not_applicable_is_preserved(self) -> None:",
+        "def test_packaging_runtime_errors_and_other_inconclusive_results_fail(self) -> None:",
+        "def test_invalid_or_incomplete_checks_fail(self) -> None:",
+        "def test_missing_duplicate_unknown_and_malformed_checks_fail(self) -> None:",
+        "def test_repository_commit_and_version_are_bound_to_the_run(self) -> None:",
+        "def test_missing_run_identity_and_invalid_root_fail(self) -> None:",
+        "def test_failed_guard_removes_stale_sarif(self) -> None:",
+        "def test_successful_guard_preserves_original_sarif(self) -> None:"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "62e6cd574cfbd6770be4dcab9e5cc67f34660733",
+      "title": "fix: prepare next release cycle and skip closed beta packaging (#86)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/62e6cd574cfbd6770be4dcab9e5cc67f34660733",
+      "changed_tests": [
+        ".github/release-tests/test_release_control.py",
+        ".github/release-tests/test_version_plan.py",
+        ".github/release-tests/test_versioned_release.py"
+      ],
+      "added_test_functions": [
+        "def test_existing_stable_tag_closes_only_push_cycle(self):",
+        "def test_missing_tag_continues_but_api_errors_cannot_authorize_skip(self):",
+        "def test_malformed_or_wrong_tag_response_fails_closed(self):",
+        "def test_python_version_updates_preserve_single_and_double_quotes(self):",
+        "def test_closed_push_cycle_stops_before_plan_allocation(self):",
+        "def test_closed_push_cycle_does_not_bypass_source_or_version_checks(self):",
+        "def test_explicit_beta_keeps_existing_stable_tag_error(self):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "31b93f2cb657b0e290faed641567fda42a4de803",
+      "title": "fix: preserve unknown pump and valve state on D-Bus",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/31b93f2cb657b0e290faed641567fda42a4de803",
+      "changed_tests": [
+        "tests/test_registration.py",
+        "tests/test_service.py"
+      ],
+      "added_test_functions": [
+        "def test_initial_device_states_are_unknown_until_first_snapshot():",
+        "def test_update_device_state_none_is_unknown_not_stopped():"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "7f362b425dcc7a29b475d9292a9471bcece24442",
+      "title": "fix(release): preserve RC eligibility during scheduled nightlies (#79)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/7f362b425dcc7a29b475d9292a9471bcece24442",
+      "changed_tests": [
+        ".github/release-tests/test_release_control.py",
+        ".github/release-tests/test_versioned_release.py"
+      ],
+      "added_test_functions": [
+        "def test_upload_parse_failure_keeps_draft_and_reports_safe_asset_context(self):",
+        "def test_scheduled_rc_reuse_preserves_floor_and_promotion_after_full_build(self):",
+        "def test_scheduled_beta_reuses_retained_qualified_package(self):",
+        "def test_promoted_stable_can_reuse_original_rc_evidence(self):",
+        "def test_final_build_stable_is_a_qualified_publication(self):",
+        "def test_release_mutation_during_verification_does_not_skip_publication(self):",
+        "def test_unqualified_or_changed_release_never_skips_publication(self):",
+        "def test_unqualified_nightly_is_not_a_reuse_baseline(self):",
+        "def test_manual_nightly_always_publishes_despite_qualified_rc(self):",
+        "def test_new_source_always_publishes_despite_previous_rc(self):",
+        "def test_default_branch_movement_during_reuse_prevents_skip(self):",
+        "def test_failed_current_gate_cannot_reuse_previous_rc(self):",
+        "def test_invalid_current_build_receipt_cannot_reuse_previous_rc(self):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "a29f114b70f3959ca34219ecc192683afb99ba6c",
+      "title": "fix: adopt atomic release evidence and bounded verification (#71)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/a29f114b70f3959ca34219ecc192683afb99ba6c",
+      "changed_tests": [
+        ".github/release-tests/test_asset_streaming.py",
+        ".github/release-tests/test_consumer_versioning.py",
+        ".github/release-tests/test_release_control.py",
+        ".github/release-tests/test_version_plan.py",
+        ".github/release-tests/test_version_receipt.py",
+        ".github/release-tests/test_versioned_release.py"
+      ],
+      "added_test_functions": [
+        "def test_copy_and_hash_bounded_chunks_including_empty_and_partial_chunk(self):",
+        "def test_transport_streams_to_output_with_media_type_and_timeout(self):",
+        "def test_transport_rejects_non_asset_endpoints_before_launching_gh(self):",
+        "def test_transport_timeout_uses_the_release_error_contract(self):",
+        "def test_successful_download_returns_identity_of_the_actual_staged_bytes(self):",
+        "def test_partial_download_is_removed_on_transport_error_timeout_or_interrupt(self):",
+        "def test_existing_file_and_symlink_are_never_overwritten_or_removed(self):",
+        "def test_truncated_uploaded_bytes_leave_draft_unpublished(self):",
+        "def test_promotion_waits_for_fresh_active_run_and_keeps_rc_bytes(self):",
+        "def test_candidate_waits_for_fresh_active_run_before_gate(self):",
+        "def test_legacy_automatic_candidate_never_writes_evidence_when_superseded(self):",
+        "def test_default_token_does_not_change_or_probe(self):",
+        "def test_scoped_classic_token_probe_is_read_only_and_secret_safe(self):",
+        "def test_scope_or_repository_mismatch_rejects_before_write(self):",
+        "def test_missing_secret_never_uses_a_fallback_identity(self):",
+        "def test_probe_failure_does_not_print_payload_or_auth_diagnostics(self):",
+        "def test_api_error_identifies_method_and_route_without_body(self):",
+        "def test_transitional_states_require_a_fresh_in_progress_response(self):",
+        "def test_every_refreshed_identity_field_is_rechecked(self):",
+        "def test_execution_checkout_is_rechecked_after_wait(self):",
+        "def test_terminal_or_unknown_state_fails_without_sleep(self):",
+        "def test_timeout_is_bounded_and_does_not_publish(self):",
+        "def test_completed_candidate_validation_does_not_poll(self):",
+        "def test_current_head_always_uses_normal_publication(self):",
+        "def test_push_and_schedule_only_record_proven_supersession(self):",
+        "def test_manual_dispatch_is_unchanged_even_at_older_source(self):",
+        "def test_successor_completion_is_not_a_publication_claim(self):",
+        "def test_missing_or_ambiguous_replacement_fails_closed(self):",
+        "def test_forged_old_or_manual_replacement_fails_closed(self):",
+        "def test_malformed_or_changed_ref_and_divergence_fail_closed(self):",
+        "def test_default_branch_rename_does_not_skip_against_an_old_branch(self):",
+        "def test_unknown_api_response_and_errors_do_not_become_success(self):",
+        "def test_narrow_transport_accepts_only_the_fixed_successor_query(self):",
+        "def test_create_and_overwrite_preserve_exact_bytes_and_existing_mode(self):",
+        "def test_hardlink_replacement_preserves_other_name_and_bytes(self):",
+        "def test_symlink_dangling_symlink_directory_and_fifo_fail_closed(self):",
+        "def test_failed_write_flush_or_replace_preserves_old_output_and_cleans_staging(",
+        "def test_symlink_inserted_during_staging_is_rejected_without_target_write(self):",
+        "def test_hardlinked_output_preserves_outside_bytes_and_plan_hashes(self):",
+        "def test_output_guards_reject_escape_symlink_directory_and_version_input(self):",
+        "def test_large_package_receipt_does_not_buffer_the_payload(self):",
+        "def test_oversized_receipt_reads_only_a_bounded_prefix(self):",
+        "def test_receipt_size_boundary_preserves_exact_bytes_and_validation(self):",
+        "def test_own_downloads_do_not_invalidate_unchanged_candidate(self):",
+        "def test_payloads_use_streaming_and_only_one_private_staged_file(self):",
+        "def test_streamed_corruption_and_truncation_reject_before_acceptance(self):",
+        "def test_interrupted_stream_never_accepts_or_leaves_private_payload(self):",
+        "def test_asset_mutation_during_downloads_still_rejects_candidate(self):",
+        "def test_release_and_tag_changes_during_downloads_still_reject_candidate(self):",
+        "def test_prepare_uses_refreshed_run_after_transient_status(self):",
+        "def test_automatic_current_head_publishes_exact_built_bytes(self):",
+        "def test_early_and_late_supersession_preserve_reservation_without_publication(self):",
+        "def test_unproven_replacement_fails_before_floor_and_tag(self):",
+        "def test_supersession_does_not_hide_a_previously_consumed_plan(self):",
+        "def test_post_guard_tag_failure_consumes_floor_without_retry_or_false_skip(self):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "3b5feb602532f17950d082efa9b7fc0681fccf71",
+      "title": "fix: align native Venus OS packages with Python 3.12 (#45)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/3b5feb602532f17950d082efa9b7fc0681fccf71",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "22b1b41de4d17b2d5af538b0db35d50355151204",
+      "title": "fix: scope release secrets and bound nightly Python versions (#44)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/22b1b41de4d17b2d5af538b0db35d50355151204",
+      "changed_tests": [
+        ".github/release-tests/test_version_plan.py"
+      ],
+      "added_test_functions": [
+        "def test_real_nightly_run_fits_uv_numeric_limit(self):",
+        "def test_nightly_runs_and_attempts_cannot_collide_or_overflow(self):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "30bd371b5404e531397cf751b85681c296606e61",
+      "title": "fix: update release artifact validation",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/30bd371b5404e531397cf751b85681c296606e61",
+      "changed_tests": [
+        ".github/release-tests/test_version_plan.py"
+      ],
+      "added_test_functions": [
+        "def test_git_source_binding_accepts_declared_checkout_eol_conversion(self):",
+        "def test_oci_buildkit_artifact_attestation_checks_subject_and_empty_config(  # pylint: disable=too-many-locals"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "a0fed5adbaef8b104c987050fb419ef77651bb0f",
+      "title": "Pin the release fixture import compatibility fix",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/a0fed5adbaef8b104c987050fb419ef77651bb0f",
+      "changed_tests": [
+        ".github/release-tests/test_versioned_release.py"
+      ],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "1d51ef054a06088055f7b4ea2516ad62d1c7eb7f",
+      "title": "Preserve pump sensor validity and deadlines in v0.1.2 (#29)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/1d51ef054a06088055f7b4ea2516ad62d1c7eb7f",
+      "changed_tests": [
+        "tests/test_invalid_sensor.py",
+        "tests/test_update.py",
+        "tests/test_worker.py"
+      ],
+      "added_test_functions": [
+        "def test_invalid_level_holds_until_existing_deadline_then_closes(invalid):",
+        "def test_invalid_level_preserves_manual_mode():",
+        "def test_client_rejects_nonfinite_level_and_height_and_recovers(invalid):",
+        "def test_nonobject_json_is_a_failed_poll_not_a_worker_exception(payload):",
+        "def test_unavailable_after_valid_sample_keeps_timer_and_stale_close(monkeypatch):",
+        "def test_delayed_poll_retains_acquisition_deadline_and_heartbeat(running, monkeypatch, delay):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "7865fdcd4ed2b1eb14c7fd137ac06c375e94b5b1",
+      "title": "Preserve live service directories during patch release updates",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/7865fdcd4ed2b1eb14c7fd137ac06c375e94b5b1",
+      "changed_tests": [
+        "tests/test_update.py"
+      ],
+      "added_test_functions": [
+        "def test_repeated_in_place_updates_preserve_live_supervisors_and_boot(venus):",
+        "def test_release_update_replaces_run_files_atomically(venus, tmp_path):",
+        "def test_first_install_creates_service_without_touching_other_services(venus):",
+        "def test_boot_hook_only_creates_a_missing_canonical_link(venus, existing):",
+        "def test_unexpected_layout_is_rejected_before_stopping_or_replacing(venus, tmp_path, layout):",
+        "def test_missing_service_definition_is_rejected_before_stop(venus):",
+        "def test_stuck_worker_aborts_without_replacing_runtime_or_logger(venus):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "6cb89233b44306ba3ac77d46d2a35b95887b811b",
+      "title": "Preserve injected exception types in worker tests",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/6cb89233b44306ba3ac77d46d2a35b95887b811b",
+      "changed_tests": [
+        "tests/test_worker.py"
+      ],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "15657514ecd5da8fcd30d23861b2a35d6c7d27e9",
+      "title": "fix: use current check attempts for native auto-merge (#25)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/15657514ecd5da8fcd30d23861b2a35d6c7d27e9",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "de807dfb06a7d57d42ead8073b04118515f3ab7d",
+      "title": "fix: recognize trusted bot identities for auto-merge (#24)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/de807dfb06a7d57d42ead8073b04118515f3ab7d",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "9d09dd14cd8cf96305bdfe83bfaf7a97c6d9393e",
+      "title": "fix: remove scorecard workflow (gcr.io billing required) (#21)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/9d09dd14cd8cf96305bdfe83bfaf7a97c6d9393e",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "47ac5b4c29b9f65e258a7752271110d6e24457e3",
+      "title": "fix: /Mode onchange handler must return true or vedbus rejects the write (#9)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/47ac5b4c29b9f65e258a7752271110d6e24457e3",
+      "changed_tests": [
+        "tests/test_app_tick.py"
+      ],
+      "added_test_functions": [
+        "def test_mode_handler_wrap_accepts_write():"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff reviewed; original parent-vs-fix test runs were not repeated."
+    },
+    {
+      "commit": "00f0b3c7f6507664d81a07d64b233d915a414996",
+      "title": "fix: survive boot-order race with legacy /opt install",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/00f0b3c7f6507664d81a07d64b233d915a414996",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "377a323e63f470f8ddba60f64d1e9a195addefe0",
+      "title": "fix: ensure rc.local boot persistence block on deploy",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/377a323e63f470f8ddba60f64d1e9a195addefe0",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "3f9a8f06e4791ca6ddd7b31ee88bd8a10b4d57c5",
+      "title": "fix: allow first valve command immediately (monotonic uptime trap)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/3f9a8f06e4791ca6ddd7b31ee88bd8a10b4d57c5",
+      "changed_tests": [
+        "tests/test_control.py"
+      ],
+      "added_test_functions": [
+        "test_first_open_is_not_delayed_by_low_system_uptime"
+      ],
+      "status": "later_regression_test_reproduces_original_defect",
+      "test_added": "2026-10-12",
+      "verification": "Same added test fails all three low-uptime cases against the original parent source and passes against current source.",
+      "evidence": "low-uptime-regression-2026-10-12.json"
+    },
+    {
+      "commit": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "title": "fix: on-device corrections from first deploy",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/6102c44a4437c15f057c600452bd747fb1119bfc",
+      "changed_tests": [
+        "tests/test_app_tick.py",
+        "tests/test_service.py"
+      ],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "1c8b26f19f532ecb0619638930f7f2eed9108ce6",
+      "title": "fix: pin setuptools packages to dbus_pump",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/1c8b26f19f532ecb0619638930f7f2eed9108ce6",
+      "changed_tests": [],
+      "added_test_functions": [],
+      "status": "candidate_needs_content_review"
+    },
+    {
+      "commit": "7109bfea9f299e0758c5878b3460abd4c5498f88",
+      "title": "Register complete pump services after initialization in v0.1.3 (#30)",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/7109bfea9f299e0758c5878b3460abd4c5498f88",
+      "changed_tests": [
+        "tests/test_registration.py"
+      ],
+      "added_test_functions": [
+        "def test_native_group_registers_complete_paths_once_on_private_buses(native):",
+        "def test_builder_registers_configured_capacity_and_disconnected_state(native, monkeypatch):",
+        "def test_initialization_failure_does_not_publish_partial_group(native):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff and regression assertions reviewed; historical parent-vs-fix test runs were not repeated.",
+      "reason": "Services register only after all paths and settings are initialized; private buses stay distinct."
+    },
+    {
+      "commit": "a1e321ffc363881360f2d39174df4c4d0922afbc",
+      "title": "Keep pump D-Bus responsive during Home Assistant requests",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/a1e321ffc363881360f2d39174df4c4d0922afbc",
+      "changed_tests": [
+        "tests/test_update.py",
+        "tests/test_worker.py"
+      ],
+      "added_test_functions": [
+        "def test_slow_poll_does_not_block_reads_or_overlap_and_applies_on_main_loop(running):",
+        "def test_manual_command_is_serialized_and_dbus_changes_only_after_completion(running):",
+        "def test_stale_data_expires_and_stale_close_is_queued_during_blocked_poll(running, monkeypatch):",
+        "def test_manual_off_cancels_queued_automatic_open(running):",
+        "def test_expiry_cancels_queued_open_even_if_last_observed_valve_was_closed(running, monkeypatch):",
+        "def test_inflight_open_gets_compensating_close_after_expiry_or_auto(running, monkeypatch, trigger):",
+        "def test_full_queue_rejects_mode_write_without_changing_controller_mode(running):",
+        "def test_compensating_close_retries_after_full_queue(running, monkeypatch):",
+        "def test_compensating_close_retries_after_ha_rejects_it(running):",
+        "def test_failed_manual_off_retries_after_inflight_open_with_old_closed_snapshot(running, failure):",
+        "def test_monitoring_only_mode_does_not_introduce_automatic_commands(running):",
+        "def test_shutdown_cancels_queued_open_discards_callbacks_and_closes_session(running):",
+        "def test_unexpected_poll_failure_allows_retry_without_fabricating_values(running):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff and regression assertions reviewed; historical parent-vs-fix test runs were not repeated.",
+      "reason": "Blocked HTTP polling does not block D-Bus and does not overlap commands; stale/queued commands are reconciled."
+    },
+    {
+      "commit": "fd08ec7cb5bdaee0142641f3246c7da02e0b3e5d",
+      "title": "Make Venus OS reinstalls persistent and verifiable",
+      "url": "https://github.com/victron-venus/dbus-pump/commit/fd08ec7cb5bdaee0142641f3246c7da02e0b3e5d",
+      "changed_tests": [
+        "tests/test_update.py"
+      ],
+      "added_test_functions": [
+        "def test_setuphelper_in_place_update_preserves_config_and_boot(tmp_path):",
+        "def test_missing_dependencies_fail_before_install_changes(tmp_path):"
+      ],
+      "status": "reviewed_added_assertions_and_source_change",
+      "verification": "Historical diff and regression assertions reviewed; historical parent-vs-fix test runs were not repeated.",
+      "reason": "Repeated in-place updates preserve device configuration and one persistent boot hook."
+    }
+  ],
+  "complete_history": [
+    {
+      "commit": "852ac7247eccbea19a4b9ff1fbd37d8a7850083e",
+      "date": "2026-10-12T17:05:34-07:00",
+      "title": "fix(ci): align Scorecard completeness guard with pinned action (#109)"
+    },
+    {
+      "commit": "7fc536c0b4345564df867648e88e327dd6634558",
+      "date": "2026-10-12T23:24:21Z",
+      "title": "chore(deps): update github actions and reusable workflows (#107)"
+    },
+    {
+      "commit": "4e6f94bf274d3be5d22fb78247bfc7dea896f0a6",
+      "date": "2026-10-12T14:34:07-07:00",
+      "title": "fix: use authoritative HTTP statuses in release automation (#108)"
+    },
+    {
+      "commit": "c35cdc33f2b5cf3d50ae361af468524d2d738ac4",
+      "date": "2026-10-12T12:27:53-07:00",
+      "title": "fix: keep stale-closed valve shut through hysteresis recovery (#106)"
+    },
+    {
+      "commit": "56266781ec30dbe946292b702fb64268b00a9b24",
+      "date": "2026-10-11T13:59:13-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#105)"
+    },
+    {
+      "commit": "48f5a9bbae3b68b76ddaae090060fb4d84d04236",
+      "date": "2026-10-10T08:56:47-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#104)"
+    },
+    {
+      "commit": "ef25788946d2f2d9eab4f24b494de1ade2d4c00d",
+      "date": "2026-10-09T11:58:33-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#103)"
+    },
+    {
+      "commit": "12fd6b67cfc329a775cc2faedbe8a3ff5a175006",
+      "date": "2026-10-08T10:15:27-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#102)"
+    },
+    {
+      "commit": "4bc6861f9285525ad8b13f664e67084323c21834",
+      "date": "2026-10-08T07:45:24-07:00",
+      "title": "Preserve archive context order with a single with statement (#101)"
+    },
+    {
+      "commit": "84b7d87f56afdb9dddab33174e90b1da62410c92",
+      "date": "2026-10-08T07:14:01-07:00",
+      "title": "Clarify installer shell paths and startup predicates (#100)"
+    },
+    {
+      "commit": "80a1412f3dfe9e1de9ff3d57fe051af29d9eb54d",
+      "date": "2026-10-08T07:02:15-07:00",
+      "title": "Strengthen test diagnostics and invalid threshold regressions (#99)"
+    },
+    {
+      "commit": "04dae9998f502275addd53450801b44e38c01812",
+      "date": "2026-10-08T06:24:04-07:00",
+      "title": "Use locked shared Python CI and clearer release validation tests (#98)"
+    },
+    {
+      "commit": "934002951b142a75a5f4b7cb2ab0b9214d4931c9",
+      "date": "2026-10-08T04:35:46-07:00",
+      "title": "refactor: separate pump command reconciliation from telemetry updates (#97)"
+    },
+    {
+      "commit": "80f01c31a5037bf47e5a9a4b87e0df2471d13a9b",
+      "date": "2026-10-08T04:09:59-07:00",
+      "title": "Require source-bound release notes and document security process (#96)"
+    },
+    {
+      "commit": "9d8ef8919e472e550c07d77ac7bfa1a5f1b98d36",
+      "date": "2026-10-07T17:16:55-07:00",
+      "title": "ci: request CodeRabbit autofix after completed reviews (#95)"
+    },
+    {
+      "commit": "51e2d71fa4ba82a0122808389901ed0e00f3fca6",
+      "date": "2026-10-07T16:02:12-07:00",
+      "title": "[StepSecurity] ci: Harden GitHub Actions (#94)"
+    },
+    {
+      "commit": "e4ba5be62749d3c06df6c1c557dd4946fd4c490d",
+      "date": "2026-10-07T12:03:24-07:00",
+      "title": "Fix Cerbo autostart without replacing the native pump service (#93)"
+    },
+    {
+      "commit": "e0fa8f3fd067ce8b16ead6c485d973e61d288e3a",
+      "date": "2026-10-07T09:51:56-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#92)"
+    },
+    {
+      "commit": "f5fcf733d65aed9dc1618b57ae9c754936aaac7d",
+      "date": "2026-10-06T16:13:42-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#90)"
+    },
+    {
+      "commit": "aa98441debbb346e292b9a6ec90181726fa30ae4",
+      "date": "2026-10-05T17:34:38-07:00",
+      "title": "ci: prepare optional runner reserve without enabling it (#91)"
+    },
+    {
+      "commit": "2aec27a338e6e347f63f681f4f37ccd4932fb54f",
+      "date": "2026-10-04T09:52:38-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#89)"
+    },
+    {
+      "commit": "80555971bb1d4135ba8c55b32c63975491773f32",
+      "date": "2026-10-03T13:55:12-07:00",
+      "title": "security: harden code-scanning workflows and CI permissions (#87)"
+    },
+    {
+      "commit": "38ded51e0539b1cd947899ded4618af385c75b9a",
+      "date": "2026-10-03T13:26:16-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#88)"
+    },
+    {
+      "commit": "62e6cd574cfbd6770be4dcab9e5cc67f34660733",
+      "date": "2026-10-03T03:53:08-07:00",
+      "title": "fix: prepare next release cycle and skip closed beta packaging (#86)"
+    },
+    {
+      "commit": "609b1694c6355d7e4d7ea8b846f8de9bbe90dbb0",
+      "date": "2026-10-03T02:46:16-07:00",
+      "title": "chore(deps): update github actions and reusable workflows (#85)"
+    },
+    {
+      "commit": "55010be68f224ea1418d66cb96ba9c8b659766a6",
+      "date": "2026-10-03T01:21:28-07:00",
+      "title": "ci: group workflow dependency updates with Renovate (#84)"
+    },
+    {
+      "commit": "6278bcaaed13b79a017d2561b20d383052dc2b9f",
+      "date": "2026-10-02T21:35:42-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#81)"
+    },
+    {
+      "commit": "6c84509a224fe96aef1a1ec9899213e98db4a0ea",
+      "date": "2026-10-02T21:27:25-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#80)"
+    },
+    {
+      "commit": "31b93f2cb657b0e290faed641567fda42a4de803",
+      "date": "2026-10-02T17:53:57-07:00",
+      "title": "fix: preserve unknown pump and valve state on D-Bus"
+    },
+    {
+      "commit": "b698a6a420485d4f04edee3d0adb6727d692caaa",
+      "date": "2026-10-02T16:24:01-07:00",
+      "title": "ci: request advisory CodeRabbit reviews on new PRs (#83)"
+    },
+    {
+      "commit": "7f362b425dcc7a29b475d9292a9471bcece24442",
+      "date": "2026-10-02T05:17:47-07:00",
+      "title": "fix(release): preserve RC eligibility during scheduled nightlies (#79)"
+    },
+    {
+      "commit": "a5fe0826d34336639a1c30014c0fb33b20f65a9d",
+      "date": "2026-10-01T18:00:53-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#76)"
+    },
+    {
+      "commit": "19a0b855840ea7e0952ad5b13729214dfe55ef95",
+      "date": "2026-10-01T17:50:04-07:00",
+      "title": "chore(deps): bump aquasecurity/trivy-action (#77)"
+    },
+    {
+      "commit": "5aec8e733aaa6aa4f96e21bc3dfd9e00e4695604",
+      "date": "2026-10-01T17:27:33-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#78)"
+    },
+    {
+      "commit": "4e05251f8e855cb2f11f7cd7a39607cf959b4142",
+      "date": "2026-09-30T20:01:52-07:00",
+      "title": "fix: refresh urllib3 security dependency (#75)"
+    },
+    {
+      "commit": "d92176b147612e8f95f8c1398056621b09cb1a7c",
+      "date": "2026-09-30T06:54:48-07:00",
+      "title": "ci: adopt canonical release lifecycle tooling (#72)"
+    },
+    {
+      "commit": "a29f114b70f3959ca34219ecc192683afb99ba6c",
+      "date": "2026-09-29T18:10:45-07:00",
+      "title": "fix: adopt atomic release evidence and bounded verification (#71)"
+    },
+    {
+      "commit": "f968963d27d539bbcb0a8f14857d60b8bdffc3e5",
+      "date": "2026-09-29T11:24:28-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#69)"
+    },
+    {
+      "commit": "9dc7431d9e702520b0070600dd05e455088960cd",
+      "date": "2026-09-29T11:24:20-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#70)"
+    },
+    {
+      "commit": "9d0c267c28323843c3b806d612f1b669458fa1ec",
+      "date": "2026-09-28T20:20:16-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#68)"
+    },
+    {
+      "commit": "1938cc984f165ec6907b86cb3290fa589a1618a7",
+      "date": "2026-09-28T20:08:47-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#67)"
+    },
+    {
+      "commit": "fc333a7fbe5a3211279eb8e06e72b05406539ea6",
+      "date": "2026-09-28T19:43:58-07:00",
+      "title": "chore(deps): bump the codeql group with 3 updates (#66)"
+    },
+    {
+      "commit": "1ab3fe37fdd104506cec035014a610d7dc5d3760",
+      "date": "2026-09-26T11:43:11-07:00",
+      "title": "chore(deps): bump astral-sh/setup-uv from 10.1.0 to 10.2.0 (#61)"
+    },
+    {
+      "commit": "342bd0ac11dea4e59f428da40da827ac2448b06f",
+      "date": "2026-09-26T11:43:05-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#64)"
+    },
+    {
+      "commit": "8fe599d50b78ad26b95f367011bd6764aff9f167",
+      "date": "2026-09-26T11:42:57-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#65)"
+    },
+    {
+      "commit": "6004895fdab364e8d22c5c9cdfc9aed1651492ac",
+      "date": "2026-09-23T09:34:52-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#59)"
+    },
+    {
+      "commit": "4567f97dc1ed0b47e9feeea696932fd5b23f6478",
+      "date": "2026-09-23T09:34:45-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#60)"
+    },
+    {
+      "commit": "14f6166f947fb2cc8a2f095510a945b799e754c0",
+      "date": "2026-09-22T12:23:50-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#58)"
+    },
+    {
+      "commit": "bcffd38f3ee24bd539a594af747467ff3307bc99",
+      "date": "2026-09-22T16:43:36Z",
+      "title": "ci: retain conditional Gitar review before auto-merge (#56)"
+    },
+    {
+      "commit": "7286db44905a2c037a411483c5027e47372c6190",
+      "date": "2026-09-22T09:31:28-07:00",
+      "title": "chore(deps): bump github/codeql-action/upload-sarif (#52)"
+    },
+    {
+      "commit": "dd220e60beee7e4b83ce667973714331051887dd",
+      "date": "2026-09-22T09:31:22-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#53)"
+    },
+    {
+      "commit": "4de5139ddf0821a99c035a3410952aba47d4b9c9",
+      "date": "2026-09-22T09:29:16-07:00",
+      "title": "ci: consolidate required validation and use protected native auto-merge (#55)"
+    },
+    {
+      "commit": "a01d220da34afe985d74f94f595ffa87082f4bb4",
+      "date": "2026-09-22T08:22:23-07:00",
+      "title": "ci: approve Dependabot PRs with GITHUB_TOKEN (#51)"
+    },
+    {
+      "commit": "b417cc104ce2eeb2e791bf0a3b3dc5b4a1369ae3",
+      "date": "2026-09-22T07:14:05-07:00",
+      "title": "chore(deps): bump github/codeql-action/init from 4.38.0 to 4.38.1 (#46)"
+    },
+    {
+      "commit": "54721b42e77efc151d6120f7214b4df0bac828b4",
+      "date": "2026-09-22T07:13:58-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#47)"
+    },
+    {
+      "commit": "2c593c754ba987fe5a12bd4ee551a9104a8602e0",
+      "date": "2026-09-22T07:13:52-07:00",
+      "title": "chore(deps): bump github/codeql-action/analyze from 4.38.0 to 4.38.1 (#49)"
+    },
+    {
+      "commit": "e3ef70ced12b44ca75cd476b1e98696072cb7c2c",
+      "date": "2026-09-22T05:53:28-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-approve-reusable.yml (#48)"
+    },
+    {
+      "commit": "c430328268cec16f8900c6f480ccfadebcd5a8f5",
+      "date": "2026-09-22T05:28:01-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#50)"
+    },
+    {
+      "commit": "3b5feb602532f17950d082efa9b7fc0681fccf71",
+      "date": "2026-09-19T20:34:45-07:00",
+      "title": "fix: align native Venus OS packages with Python 3.12 (#45)"
+    },
+    {
+      "commit": "22b1b41de4d17b2d5af538b0db35d50355151204",
+      "date": "2026-09-19T18:59:32-07:00",
+      "title": "fix: scope release secrets and bound nightly Python versions (#44)"
+    },
+    {
+      "commit": "75d53614a64d10b707a5b5b91db86f98f9a75390",
+      "date": "2026-09-16T21:33:40-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/python-ci.yml (#41)"
+    },
+    {
+      "commit": "d3fe49f6aa19a55af50c12a307cee4a98ceeaa17",
+      "date": "2026-09-16T21:33:33-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-approve-reusable.yml (#42)"
+    },
+    {
+      "commit": "823ffbd89e779ce5329be2a45214ac4ed8fa4ea8",
+      "date": "2026-09-16T21:33:26-07:00",
+      "title": "chore(deps): bump victron-venus/venus-os-ci-toolkit/.github/workflows/auto-merge.yml (#43)"
+    },
+    {
+      "commit": "c2ba8cacf8041b2298997043235697524030400a",
+      "date": "2026-09-15T19:44:52-07:00",
+      "title": "chore(deps): bump github/codeql-action/analyze from 4.37.9 to 4.38.0 (#36)"
+    },
+    {
+      "commit": "0413ac6910694e55296ae5950ff886e64aa3b8c5",
+      "date": "2026-09-15T19:44:44-07:00",
+      "title": "chore(deps): bump github/codeql-action/upload-sarif (#37)"
+    },
+    {
+      "commit": "9346cbf830cdef47516ba72bf1ae3e2d1ba45d26",
+      "date": "2026-09-15T19:44:37-07:00",
+      "title": "chore(deps): bump actions/setup-python from 5.1.0 to 7.0.0 (#38)"
+    },
+    {
+      "commit": "35616d2ba5b0ec0f4147f17d7a177a088a4f375c",
+      "date": "2026-09-15T19:44:31-07:00",
+      "title": "chore(deps): bump github/codeql-action/init from 4.37.9 to 4.38.0 (#39)"
+    },
+    {
+      "commit": "09d8065f4d034ff3c66aa31438b88fb7781196c8",
+      "date": "2026-09-15T19:44:24-07:00",
+      "title": "chore(deps): bump astral-sh/setup-uv from 10.0.1 to 10.1.0 (#40)"
+    },
+    {
+      "commit": "30bd371b5404e531397cf751b85681c296606e61",
+      "date": "2026-09-13T20:26:08-07:00",
+      "title": "fix: update release artifact validation"
+    },
+    {
+      "commit": "a0fed5adbaef8b104c987050fb419ef77651bb0f",
+      "date": "2026-09-13T16:59:40-07:00",
+      "title": "Pin the release fixture import compatibility fix"
+    },
+    {
+      "commit": "b407e9b29b7ce349288825ec7e133f141025abfb",
+      "date": "2026-09-13T15:50:32-07:00",
+      "title": "Adopt frozen release versions and verified artifact receipts"
+    },
+    {
+      "commit": "62b7cdd52def92ade2a0397c4576c615e9347966",
+      "date": "2026-09-13T04:48:52Z",
+      "title": "Approve trusted PRs without requiring automerge (#33)"
+    },
+    {
+      "commit": "d837e3f3fc83391abd542fea67c2f16addab7f20",
+      "date": "2026-09-12T20:22:55-07:00",
+      "title": "chore: prepare 0.1.4 prerelease base (#32)"
+    },
+    {
+      "commit": "16c2865690bbba6d1be6447bab814bfa84121b06",
+      "date": "2026-09-12T17:55:00-07:00",
+      "title": "ci: add gated release channels and release strategy (#28)"
+    },
+    {
+      "commit": "2ddc7dd55fc53997f77345452539d8a548b60a79",
+      "date": "2026-09-12T16:33:41-07:00",
+      "title": "Correct persistent Venus OS log storage documentation (#31)"
+    },
+    {
+      "commit": "7109bfea9f299e0758c5878b3460abd4c5498f88",
+      "date": "2026-09-12T16:21:49-07:00",
+      "title": "Register complete pump services after initialization in v0.1.3 (#30)"
+    },
+    {
+      "commit": "1d51ef054a06088055f7b4ea2516ad62d1c7eb7f",
+      "date": "2026-09-12T15:58:19-07:00",
+      "title": "Preserve pump sensor validity and deadlines in v0.1.2 (#29)"
+    },
+    {
+      "commit": "508231bd9ce683d3b1b29e079ec76465f72cb6c0",
+      "date": "2026-09-12T12:34:57-07:00",
+      "title": "Allow installer regression harness to exceed the shutdown bound"
+    },
+    {
+      "commit": "7865fdcd4ed2b1eb14c7fd137ac06c375e94b5b1",
+      "date": "2026-09-12T12:31:54-07:00",
+      "title": "Preserve live service directories during patch release updates"
+    },
+    {
+      "commit": "6cb89233b44306ba3ac77d46d2a35b95887b811b",
+      "date": "2026-09-12T12:03:55-07:00",
+      "title": "Preserve injected exception types in worker tests"
+    },
+    {
+      "commit": "a1e321ffc363881360f2d39174df4c4d0922afbc",
+      "date": "2026-09-12T11:54:35-07:00",
+      "title": "Keep pump D-Bus responsive during Home Assistant requests"
+    },
+    {
+      "commit": "fd08ec7cb5bdaee0142641f3246c7da02e0b3e5d",
+      "date": "2026-09-12T09:20:17-07:00",
+      "title": "Make Venus OS reinstalls persistent and verifiable"
+    },
+    {
+      "commit": "29257295bacfaa4ff5fb66a21c7f3eac77cfe474",
+      "date": "2026-09-11T22:18:32-07:00",
+      "title": "ci: refresh dismissed approvals for the current PR head (#26)"
+    },
+    {
+      "commit": "15657514ecd5da8fcd30d23861b2a35d6c7d27e9",
+      "date": "2026-09-11T21:45:40-07:00",
+      "title": "fix: use current check attempts for native auto-merge (#25)"
+    },
+    {
+      "commit": "de807dfb06a7d57d42ead8073b04118515f3ab7d",
+      "date": "2026-09-11T21:23:58-07:00",
+      "title": "fix: recognize trusted bot identities for auto-merge (#24)"
+    },
+    {
+      "commit": "6ddec907603c78b32696556f26f5e75c72f2d6b9",
+      "date": "2026-09-11T19:39:18-07:00",
+      "title": "ci: lock pump tests and resolve Sonar baseline findings (#23)"
+    },
+    {
+      "commit": "d215a47c0980f721c8fc0596317de7bdaedca67c",
+      "date": "2026-09-11T18:57:54-07:00",
+      "title": "ci: automate trusted PR approval and native merge (#22)"
+    },
+    {
+      "commit": "61527057779bd6f988161b9955b48f70e9a0e3ec",
+      "date": "2026-09-10T20:24:41-07:00",
+      "title": "revert: ci: add python-security workflow with real failure gating"
+    },
+    {
+      "commit": "d0ab51115cebf59d6413467732f2cf013c75de07",
+      "date": "2026-09-10T20:22:02-07:00",
+      "title": "ci: add python-security workflow with real failure gating"
+    },
+    {
+      "commit": "9d09dd14cd8cf96305bdfe83bfaf7a97c6d9393e",
+      "date": "2026-09-02T09:28:47-07:00",
+      "title": "fix: remove scorecard workflow (gcr.io billing required) (#21)"
+    },
+    {
+      "commit": "544612e3e12272900512bb18b7968d078d55d3d8",
+      "date": "2026-09-02T09:25:25-07:00",
+      "title": "chore(deps): bump step-security/harden-runner from 2.21.0 to 2.21.1 (#20)"
+    },
+    {
+      "commit": "a688be3d49ce0fea9cc782f06fc02f37929df1e6",
+      "date": "2026-08-31T11:03:56-07:00",
+      "title": "chore(deps): bump actions/upload-artifact from 4.6.2 to 7.0.1 (#19)"
+    },
+    {
+      "commit": "0a4d510c43005c086b78ff52db4e3ee81f9466b8",
+      "date": "2026-08-30T11:33:33-07:00",
+      "title": "feat: add SetupHelper package entry point (#12)"
+    },
+    {
+      "commit": "cea8126240339fc3e253f5e21b5d2edd78f8fe88",
+      "date": "2026-08-29T20:44:41-07:00",
+      "title": "chore(deps): bump actions/checkout from 4.4.0 to 7.0.1 (#14)"
+    },
+    {
+      "commit": "014ea8349cbdf2e59caf695f32a1ed77a52e7342",
+      "date": "2026-08-29T20:44:34-07:00",
+      "title": "chore(deps): bump github/codeql-action/init from 4.37.7 to 4.37.9 (#15)"
+    },
+    {
+      "commit": "137c659cc4c595aa77f1fa78f3b7cb6b8e54d296",
+      "date": "2026-08-29T20:44:26-07:00",
+      "title": "chore(deps): bump github/codeql-action/upload-sarif (#16)"
+    },
+    {
+      "commit": "923102444abfc75c1f1cfb3018e172fd0006fbad",
+      "date": "2026-08-29T20:44:20-07:00",
+      "title": "chore(deps): bump github/codeql-action/analyze from 4.37.7 to 4.37.9 (#17)"
+    },
+    {
+      "commit": "dad5b4ec0ba87e01d437ddfec924b6135bc43410",
+      "date": "2026-08-29T20:44:12-07:00",
+      "title": "chore(deps): bump ossf/scorecard-action (#18)"
+    },
+    {
+      "commit": "6fb7a6142da213c4c6d4f32eb0ac7aec0b57483e",
+      "date": "2026-08-29T19:48:31-07:00",
+      "title": "[StepSecurity] Apply security best practices (#13)"
+    },
+    {
+      "commit": "f643fa01b68fb3e6ad8cb8f57ea49cc3d51776e1",
+      "date": "2026-08-29T12:25:09-07:00",
+      "title": "feat: add SetupHelper package entry point (#11)"
+    },
+    {
+      "commit": "9ed414bbcb4d3a765492bbfdd0f961f63f33f418",
+      "date": "2026-08-27T22:42:27-07:00",
+      "title": "chore: add *.backup to .gitignore (#10)"
+    },
+    {
+      "commit": "96a0ad162435578e3217796e6ac39ba33962046a",
+      "date": "2026-08-26T17:17:44-07:00",
+      "title": "Update deploy.sh"
+    },
+    {
+      "commit": "47ac5b4c29b9f65e258a7752271110d6e24457e3",
+      "date": "2026-08-26T06:50:34-07:00",
+      "title": "fix: /Mode onchange handler must return true or vedbus rejects the write (#9)"
+    },
+    {
+      "commit": "cabdddfaae4a97937b4cdcf186914396f24219e8",
+      "date": "2026-08-25T14:09:14-07:00",
+      "title": "docs: deployment notes from v0.1.0 bring-up (#3)"
+    },
+    {
+      "commit": "ac5c8d115029e567d2aae01cb17a2e2747eb773d",
+      "date": "2026-08-25T12:42:05-07:00",
+      "title": "ci: add auto-merge pipeline (#8)"
+    },
+    {
+      "commit": "00f0b3c7f6507664d81a07d64b233d915a414996",
+      "date": "2026-08-25T12:29:55-07:00",
+      "title": "fix: survive boot-order race with legacy /opt install"
+    },
+    {
+      "commit": "377a323e63f470f8ddba60f64d1e9a195addefe0",
+      "date": "2026-08-24T14:52:10-07:00",
+      "title": "fix: ensure rc.local boot persistence block on deploy"
+    },
+    {
+      "commit": "377f127880d6ab2babea6678bee7bd8af2b2c787",
+      "date": "2026-08-23T19:47:32-07:00",
+      "title": "docs: real Cerbo MQTT topic shape is pump/<instance>/State"
+    },
+    {
+      "commit": "30fb9827a61e4624b972b12dc0d58b9a8d140f7f",
+      "date": "2026-08-23T19:35:07-07:00",
+      "title": "docs: full water data-flow + valve hysteresis diagrams in README"
+    },
+    {
+      "commit": "9a1f36e416a92db3f6747e924bab455537c35391",
+      "date": "2026-08-23T17:31:07-07:00",
+      "title": "refactor: compute remaining liters locally from raw height sensor"
+    },
+    {
+      "commit": "2c61d67634c14f393b0da02bc9bdd96c3dd01e26",
+      "date": "2026-08-23T17:22:51-07:00",
+      "title": "feat: tank capacity + HA-computed remaining liters"
+    },
+    {
+      "commit": "2dc33bac5fc0402377174850f59ae32ee10fc34d",
+      "date": "2026-08-23T15:57:50-07:00",
+      "title": "ci: add security workflows; docs: README mermaid diagram"
+    },
+    {
+      "commit": "5d6e95b9057823c762a01fb3e1014a66fc519a3a",
+      "date": "2026-08-23T14:25:12-07:00",
+      "title": "test: valve entity from config, not hardcoded"
+    },
+    {
+      "commit": "3f9a8f06e4791ca6ddd7b31ee88bd8a10b4d57c5",
+      "date": "2026-08-23T14:23:31-07:00",
+      "title": "fix: allow first valve command immediately (monotonic uptime trap)"
+    },
+    {
+      "commit": "77babaacd074f4d0167b9ab4f3916a82255567a4",
+      "date": "2026-08-23T14:21:40-07:00",
+      "title": "style: ruff format (0.16.4)"
+    },
+    {
+      "commit": "6102c44a4437c15f057c600452bd747fb1119bfc",
+      "date": "2026-08-23T14:18:25-07:00",
+      "title": "fix: on-device corrections from first deploy"
+    },
+    {
+      "commit": "1c8b26f19f532ecb0619638930f7f2eed9108ce6",
+      "date": "2026-08-23T13:43:47-07:00",
+      "title": "fix: pin setuptools packages to dbus_pump"
+    },
+    {
+      "commit": "8cdf1e83c2b65c24a07e01addd04eb1d2e8d1187",
+      "date": "2026-08-23T13:38:24-07:00",
+      "title": "feat: initial dbus-pump service"
+    },
+    {
+      "commit": "87fd5cd8365776ae4e316fa72f3f11623ae9867c",
+      "date": "2026-08-23T13:26:22-07:00",
+      "title": "Initial commit"
+    }
+  ]
+}

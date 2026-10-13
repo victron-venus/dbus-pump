@@ -1,0 +1,22 @@
+{
+  "python": "3.12.13",
+  "build": "1.6.1",
+  "setuptools": "84.0.0",
+  "wheel": "0.48.0",
+  "command": "python -m build --no-isolation --outdir <empty-directory>",
+  "metadata_check": "twine 6.1.0 check --strict: both artifacts passed",
+  "warnings": 0,
+  "reproducibility": "One wheel/sdist build checked; cross-build equality not claimed. Native archive equality is separate evidence.",
+  "assets": [
+    {
+      "name": "dbus_pump-0.1.6-py3-none-any.whl",
+      "sha256": "f167b7229bb8b36f6154d0a6b131fcc14ef277a210dfd6b91ef1f4dfbe894576",
+      "bytes": 25129
+    },
+    {
+      "name": "dbus_pump-0.1.6.tar.gz",
+      "sha256": "823efca132b4710270178100d3dee6581c8ead866545cdc6c68d39f05a63109d",
+      "bytes": 50477
+    }
+  ]
+}

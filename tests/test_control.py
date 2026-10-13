@@ -162,3 +162,12 @@ def test_repeated_stale_close_does_not_extend_reopen_interval(clock):
     assert controller.update(None, fresh=False) == (False, "stale-close")
     clock.advance(1)
     assert controller.update(20.0, fresh=True) == (True, "auto-open")
+
+
+@pytest.mark.parametrize("uptime", [0.0, 1.0, 59.0])
+def test_first_open_is_not_delayed_by_low_system_uptime(clock, uptime):
+    # Regression for 3f9a8f06: a zero last-transition timestamp suppressed
+    # the first open command until the host's monotonic clock reached 60s.
+    clock.t = uptime
+    controller = make(clock)
+    assert controller.update(20.0, fresh=True) == (True, "auto-open")

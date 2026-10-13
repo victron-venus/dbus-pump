@@ -20,4 +20,4 @@ if [[ "${1:-}" == security ]]; then
 fi
 "$python_bin" -m ruff check .
 "$python_bin" -m ruff format --check .
-"$python_bin" -m pytest tests/ --cov=. --cov-report=term-missing --cov-fail-under=60
+"$python_bin" -m pytest tests/ .github/release-tests/ .github/workflow-tests/ --cov --cov-report=term-missing --cov-fail-under=80
