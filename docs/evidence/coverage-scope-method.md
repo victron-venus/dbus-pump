@@ -15,7 +15,7 @@ counts all shell AST statements, including compound statements and substitutions
 in tracked scripts and workflow run blocks. It recursively inventories the SSH,
 trap and heredoc forms actually present here. Double-quoted SSH command literals
 are decoded before parsing their remote shell body; they are never executed.
-Embedded Python AST statements, multiline awk/sed allowances, find-exec commands
+Embedded Python AST statements, multiline awk/sed allowances, find-exec commands,
 the two local_checks policy commands, the dormant release.py fallback command,
 and the Pump Python configuration template receive zero coverage credit. Their
 script targets were already inventoried; each wrapper is conservatively counted
