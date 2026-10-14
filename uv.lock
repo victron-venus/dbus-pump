@@ -101,7 +101,7 @@ wheels = [
 
 [[package]]
 name = "dbus-pump"
-version = "0.1.7"
+version = "0.1.8"
 source = { editable = "." }
 dependencies = [
     { name = "requests" },

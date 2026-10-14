@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2026-10-14
+
+### Changed
+
+- Require positive fuzz engine execution counts, instrumented production code and validated seed corpora before accepting RC evidence.
+- Add regression tests for malformed reports, unsafe corpora and incomplete seed replay; retain the existing coverage requirements.
+- Keep mutation campaigns restricted to public RCs and use deterministic seed checks in ordinary CI.
+
+### Upgrade
+
+Use the documented update procedure and preserve local configuration. No application configuration or data migration is introduced. Keep the previous accepted package available for rollback; the exact candidate still requires applicable device and integration acceptance.
+
+### Security
+
+The release gate fails closed on absent, invalid or incomplete fuzz evidence. No application vulnerability or new hardware acceptance is claimed by this validation update.
+
 ## [0.1.7] - Development line
 
 ### Maintenance
