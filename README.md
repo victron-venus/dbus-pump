@@ -1,5 +1,7 @@
 # dbus-pump
 
+[![Fuzzing: RC only](https://img.shields.io/badge/Fuzzing-RC%20only-blue)](docs/fuzzing.md)
+
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15438/badge)](https://www.bestpractices.dev/projects/15438)
 
 Home-Assistant-backed water tank/pump/valve bridge for Victron Venus OS.
@@ -428,3 +430,9 @@ The [quality evidence](docs/quality-evidence.md) and [security assurance argumen
 explain the checks, their scope and outstanding work. The
 [OpenSSF evidence](docs/openssf-evidence.md) records progress without claiming an
 unearned badge.
+
+## Release-candidate fuzzing
+
+The target varies sensor values, sample ages, freshness and requested modes over bounded sequences. It calls the real ValveController with an explicit monotonic clock and checks invalid-mode rejection, manual mode semantics and closure when evidence expires. It does not connect to Home Assistant, D-Bus, pumps or valves.
+
+[RC-only fuzzing policy, local reproduction and failure handling](docs/fuzzing.md).
