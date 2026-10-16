@@ -16,6 +16,16 @@
     "LICENSE",
     ".python-version",
     "install.py",
-    "docs/staged-installation.md"
+    "README.ru.md",
+    "README.de.md",
+    "README.nl.md",
+    "docs",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "RELEASING.md",
+    "ROADMAP.md",
+    "GOVERNANCE.md",
+    "CODE_OF_CONDUCT.md"
   ]
 }

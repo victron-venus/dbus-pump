@@ -29,7 +29,31 @@
         "-max_len=4096"
       ],
       "seconds": 60,
-      "corpus": "fuzz/corpus/control"
+      "corpus": "fuzz/corpus/control",
+      "instrumentation": [
+        {
+          "module": "dbus_pump.control",
+          "functions": [
+            "ValveController.set_mode",
+            "ValveController.update"
+          ]
+        },
+        {
+          "module": "dbus_pump.tank",
+          "functions": [
+            "finite_number",
+            "validate_geometry",
+            "normalize_level"
+          ]
+        }
+      ]
     }
+  ],
+  "preflight-paths": [
+    ".github/requirements-fuzz.in",
+    "dbus_pump",
+    "fuzz",
+    "pyproject.toml",
+    "uv.lock"
   ]
 }

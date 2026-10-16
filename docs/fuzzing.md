@@ -4,6 +4,14 @@
 
 **Valve state-machine transitions.** The target varies sensor values, sample ages, freshness and requested modes over bounded sequences. It calls the real ValveController with an explicit monotonic clock and checks invalid-mode rejection, manual mode semantics and closure when evidence expires. It does not connect to Home Assistant, D-Bus, pumps or valves.
 
+**Tank input normalization.** The same 60-second target also exercises the real
+`dbus_pump.tank` functions with percent and centimeter inputs, capacity, offset,
+radius and inconsistent unit metadata. It checks finite bounded results,
+percentage clamping, boolean rejection and the cylinder conversion for bounded
+geometry. Synthetic seeds include the documented 93 cm example, zero capacity,
+invalid radius and a non-finite measurement. These checks do not claim sensor
+calibration, physical valve operation or live Home Assistant acceptance.
+
 The harness is [fuzz/fuzz_control.py](../fuzz/fuzz_control.py), with versioned
 synthetic inputs in [fuzz/corpus/control](../fuzz/corpus/control). It exercises project code rather than
 only a standard-library JSON decoder. Expected validation rejections are handled
@@ -74,3 +82,34 @@ unit-test or seed-only replay on another platform is not an instrumented fuzz ru
 The README badge **Fuzzing: RC only** describes this configured policy. It is a
 static label, not a live success indicator or claim of Google OSS-Fuzz enrollment.
 The specific RC's Actions result and receipt are the execution evidence.
+
+
+## Deterministic preflight in ordinary CI
+
+For relevant changes in a public repository, the existing CI configuration
+contract job installs the hash-locked Python 3.12 fuzz dependencies, runs
+`pip check`, and replays the committed corpus with Atheris `-runs=0`.
+This is deterministic seed replay: it does not start the timed mutation
+campaign. Timed fuzzing remains exclusive to release candidates. The shared
+preflight has a four-minute total budget, including dependency setup.
+
+The `preflight-paths` entries in `.github/fuzz.json` select the relevant
+production, dependency and harness changes. Shared contract, manifest and
+workflow changes also trigger this check; missing comparison history runs
+the check conservatively. Unrelated changes can skip this extra replay.
+
+Before replay, the shared helper verifies that the following declarations
+refer to project-local Python functions already instrumented by the
+harness. Missing import instrumentation fails the check instead of
+silently counting executions with incomplete feedback:
+
+- `dbus_pump.control.ValveController.set_mode`
+- `dbus_pump.control.ValveController.update`
+- `dbus_pump.tank.finite_number`
+- `dbus_pump.tank.validate_geometry`
+- `dbus_pump.tank.normalize_level`
+
+Update these declarations when production functions move or are renamed.
+They prove that the selected code is instrumented; they do not prove
+exhaustive path coverage. Keep positive and rejected-input corpus cases
+and independent semantic assertions alongside the existing unit tests.

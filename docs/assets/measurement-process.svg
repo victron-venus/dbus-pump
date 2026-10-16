@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="990" viewBox="0 0 1040 990" role="img" aria-labelledby="title desc">
+<title id="title">Measurement process, control ownership and read-only preview</title>
+<desc id="desc">Home Assistant supplies one primary measurement in cm or percent. Validation checks finite data, unit metadata, geometry and acquisition age before normalization. The same canonical percent drives D-Bus level and remaining volume, and control if enabled. Displays receive formatted values. HA owns automation at this site, bridge AUTO is off; normal manual and shutdown operations can actuate. Dry-run reads HA, uses only in-memory services, writes neither actuators nor heartbeat, and closes its HTTP session. This is a static design diagram, not live telemetry or a physical acceptance test.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#435777"/></marker></defs>
+<rect width="1040" height="990" rx="20" fill="#fff"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect width="1040" height="990" rx="20" fill="#f3f6fc"/>
+<path d="M20 0 H1020 Q1040 0 1040 20 V116 H0 V20 Q0 0 20 0Z" fill="#172653"/>
+<circle cx="969" cy="17" r="109" fill="#2866d8" opacity=".23"/>
+<circle cx="1025" cy="105" r="106" fill="#1eb69b" opacity=".14"/>
+<text x="32" y="29" font-size="13" fill="#99e8db" font-weight="bold" text-anchor="start">PROCESS / MEASUREMENT → PUBLICATION</text>
+<text x="32" y="66" font-size="29" fill="#ffffff" font-weight="bold" text-anchor="start">One measurement. One consistent tank level.</text>
+<text x="32" y="95" font-size="16" fill="#dce5ff" font-weight="normal" text-anchor="start">Explicit units and one authoritative source keep the displayed level and volume aligned.</text>
+<text x="32" y="141" font-size="12" fill="#435777" font-weight="bold" text-anchor="start">TELEMETRY FLOW</text>
+<rect x="32" y="154" width="174" height="236" rx="14" fill="#ffffff" stroke="#d4deee"/>
+<path d="M46 154 H192 Q206 154 206 168 V182 H32 V168 Q32 154 46 154Z" fill="#e5efff"/>
+<text x="46" y="174" font-size="12" fill="#165ea8" font-weight="bold" text-anchor="start">01  SOURCE</text>
+<text x="46" y="220" font-size="20" fill="#165ea8" font-weight="bold" text-anchor="start">Home Assistant</text>
+<text x="46" y="253" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Primary level entity</text>
+<text x="46" y="284" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Configured unit: cm / %</text>
+<text x="46" y="315" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">HA unit metadata</text>
+<text x="46" y="346" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Pump + valve states</text>
+<line x1="210" y1="271" x2="226" y2="271" stroke="#435777" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="232" y="154" width="174" height="236" rx="14" fill="#ffffff" stroke="#d4deee"/>
+<path d="M246 154 H392 Q406 154 406 168 V182 H232 V168 Q232 154 246 154Z" fill="#eee8fc"/>
+<text x="246" y="174" font-size="12" fill="#6239bc" font-weight="bold" text-anchor="start">02  ACCEPT / REJECT</text>
+<text x="246" y="220" font-size="20" fill="#6239bc" font-weight="bold" text-anchor="start">Validate</text>
+<text x="246" y="253" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Finite number</text>
+<text x="246" y="284" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Matching units</text>
+<text x="246" y="315" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Valid tank geometry</text>
+<text x="246" y="346" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Fresh acquisition time</text>
+<line x1="410" y1="271" x2="426" y2="271" stroke="#435777" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="432" y="154" width="174" height="236" rx="14" fill="#ffffff" stroke="#d4deee"/>
+<path d="M446 154 H592 Q606 154 606 168 V182 H432 V168 Q432 154 446 154Z" fill="#dff5ee"/>
+<text x="446" y="174" font-size="12" fill="#087e73" font-weight="bold" text-anchor="start">03  ONE VALUE</text>
+<text x="446" y="220" font-size="20" fill="#087e73" font-weight="bold" text-anchor="start">Normalize</text>
+<text x="446" y="253" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">cm → liters → percent</text>
+<text x="446" y="284" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">% → canonical percent</text>
+<text x="446" y="315" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Bounded to 0-100%</text>
+<text x="446" y="346" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Unrounded for control</text>
+<line x1="610" y1="271" x2="626" y2="271" stroke="#435777" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="632" y="154" width="174" height="236" rx="14" fill="#ffffff" stroke="#d4deee"/>
+<path d="M646 154 H792 Q806 154 806 168 V182 H632 V168 Q632 154 646 154Z" fill="#e5efff"/>
+<text x="646" y="174" font-size="12" fill="#165ea8" font-weight="bold" text-anchor="start">04  PUBLISH</text>
+<text x="646" y="220" font-size="20" fill="#165ea8" font-weight="bold" text-anchor="start">Native D-Bus</text>
+<text x="646" y="253" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">/Level = percent</text>
+<text x="646" y="284" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">/Remaining = m³</text>
+<text x="646" y="315" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">/Capacity = m³</text>
+<text x="646" y="346" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Stable names + IDs</text>
+<line x1="810" y1="271" x2="826" y2="271" stroke="#435777" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="832" y="154" width="174" height="236" rx="14" fill="#ffffff" stroke="#d4deee"/>
+<path d="M846 154 H992 Q1006 154 1006 168 V182 H832 V168 Q832 154 846 154Z" fill="#eee8fc"/>
+<text x="846" y="174" font-size="12" fill="#6239bc" font-weight="bold" text-anchor="start">05  SUBSCRIBERS</text>
+<text x="846" y="220" font-size="20" fill="#6239bc" font-weight="bold" text-anchor="start">Display</text>
+<text x="846" y="253" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">GX / VRM / MQTT</text>
+<text x="846" y="284" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Readable, translated</text>
+<text x="846" y="315" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">display labels</text>
+<text x="846" y="346" font-size="13.5" fill="#172b4d" font-weight="normal" text-anchor="start">Rounded for display</text>
+<rect x="32" y="414" width="976" height="82" rx="14" fill="#e0f3ec" stroke="#acd7c8"/>
+<text x="52" y="445" font-size="19" fill="#087e73" font-weight="bold" text-anchor="start">Shared canonical value</text>
+<text x="52" y="474" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Level (%) → Remaining = capacity · level / 100 → AUTO thresholds, if enabled</text>
+<rect x="32" y="520" width="472" height="143" rx="14" fill="#fff1ef" stroke="#efc7c2"/>
+<text x="52" y="553" font-size="18" fill="#c53c41" font-weight="bold" text-anchor="start">Rejected samples never refresh the deadline</text>
+<text x="52" y="584" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Bad units, nonfinite data, future or expired samples</text>
+<text x="52" y="610" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">cannot become a new valid tank reading.</text>
+<text x="52" y="639" font-size="15" fill="#c53c41" font-weight="normal" text-anchor="start">Optional secondary cm sensor: diagnostics only.</text>
+<rect x="528" y="520" width="480" height="143" rx="14" fill="#edf2ff" stroke="#ccd8f5"/>
+<text x="548" y="553" font-size="18" fill="#165ea8" font-weight="bold" text-anchor="start">Freshness is a software acquisition check</text>
+<text x="548" y="584" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Cached readings keep their original expiry deadline.</text>
+<text x="548" y="610" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">AUTO stale-close applies only when control is enabled.</text>
+<text x="548" y="639" font-size="15" fill="#165ea8" font-weight="normal" text-anchor="start">It does not prove a physical sensor changed.</text>
+<rect x="32" y="687" width="472" height="228" rx="14" fill="#ffffff" stroke="#d6c8f0"/>
+<text x="52" y="723" font-size="13" fill="#6239bc" font-weight="bold" text-anchor="start">CONTROL OWNERSHIP</text>
+<text x="52" y="755" font-size="21" fill="#6239bc" font-weight="bold" text-anchor="start">Configured site: HA owns automation</text>
+<text x="52" y="790" font-size="17" fill="#172b4d" font-weight="bold" text-anchor="start">Bridge automatic control = disabled</text>
+<text x="52" y="822" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Normal operation still permits explicit manual writes.</text>
+<text x="52" y="848" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Normal shutdown can request valve closure.</text>
+<text x="52" y="883" font-size="15" fill="#c53c41" font-weight="normal" text-anchor="start">Multiple writers are not automatically arbitrated.</text>
+<rect x="528" y="687" width="480" height="228" rx="14" fill="#ffffff" stroke="#acd7c8"/>
+<text x="548" y="723" font-size="13" fill="#087e73" font-weight="bold" text-anchor="start">READ-ONLY DRY-RUN</text>
+<text x="548" y="755" font-size="20" fill="#087e73" font-weight="bold" text-anchor="start">HA snapshot → memory → printed preview</text>
+<text x="548" y="790" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">No native D-Bus connection or registration.</text>
+<text x="548" y="822" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">No actuator commands. No service heartbeat.</text>
+<text x="548" y="848" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">The HTTP session closes when the preview ends.</text>
+<text x="548" y="883" font-size="15" fill="#087e73" font-weight="normal" text-anchor="start">The preview does not test physical actuation.</text>
+<text x="32" y="950" font-size="15" fill="#435777" font-weight="normal" text-anchor="start">Static process diagram · describes the configured design, not a live status.</text>
+<text x="32" y="975" font-size="14" fill="#435777" font-weight="normal" text-anchor="start">Sensor state and reported switch state are not proof of physical water level or valve position.</text>
+</g>
+</svg>

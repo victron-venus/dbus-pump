@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600" role="img" aria-labelledby="title desc">
+<title id="title">Default valve hysteresis and stale-data behavior</title>
+<desc id="desc">When AUTO is enabled, fresh level at or below 30 percent requests opening; at or above 85 percent requests closure. Between thresholds the prior decision is held. Normal transitions wait 60 seconds. No fresh sample for 120 seconds requests closure. Manual ON and OFF override AUTO. At this site HA owns automation and bridge AUTO is off.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#435777"/></marker></defs>
+<rect width="1040" height="600" rx="20" fill="#fff"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<text x="36" y="47" font-size="28" fill="#172b4d" font-weight="bold" text-anchor="start">Valve control · hysteresis and freshness</text>
+<text x="36" y="78" font-size="18" fill="#a04a08" font-weight="normal" text-anchor="start">Applies only with ENABLE_CONTROL=True and AUTO mode</text>
+<rect x="36" y="122" width="286" height="136" rx="14" fill="#eaf5ef" stroke="#8dbba2"/>
+<text x="58" y="160" font-size="23" fill="#176443" font-weight="bold" text-anchor="start">Fresh level ≤ 30%</text>
+<text x="58" y="195" font-size="21" fill="#172b4d" font-weight="normal" text-anchor="start">Request OPEN</text>
+<text x="58" y="229" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Normal transition timer applies</text>
+<rect x="360" y="122" width="320" height="136" rx="14" fill="#f2f4f8" stroke="#9db4d1"/>
+<text x="380" y="160" font-size="23" fill="#172b4d" font-weight="bold" text-anchor="start">30% &lt; level &lt; 85%</text>
+<text x="380" y="195" font-size="21" fill="#172b4d" font-weight="normal" text-anchor="start">Keep previous decision</text>
+<text x="380" y="229" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">After stale-close: remain CLOSED</text>
+<rect x="718" y="122" width="286" height="136" rx="14" fill="#edf3fb" stroke="#9db4d1"/>
+<text x="740" y="160" font-size="23" fill="#165ea8" font-weight="bold" text-anchor="start">Fresh level ≥ 85%</text>
+<text x="740" y="195" font-size="21" fill="#172b4d" font-weight="normal" text-anchor="start">Request CLOSED</text>
+<text x="740" y="229" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Normal transition timer applies</text>
+<line x1="68" y1="294" x2="972" y2="294" stroke="#435777" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="68" y="324" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">0%</text>
+<text x="331" y="324" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">30%</text>
+<text x="834" y="324" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">85%</text>
+<text x="975" y="324" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="end">100% level</text>
+<rect x="36" y="362" width="595" height="134" rx="14" fill="#fff6e9" stroke="#d5b488"/>
+<text x="57" y="397" font-size="21" fill="#a04a08" font-weight="bold" text-anchor="start">No fresh level for 120 s → request CLOSED</text>
+<text x="57" y="429" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Stale-close bypasses the normal transition timer.</text>
+<text x="57" y="461" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Recovery needs a low reading to open again.</text>
+<rect x="662" y="362" width="342" height="134" rx="14" fill="#f2f4f8" stroke="#9db4d1"/>
+<text x="682" y="397" font-size="18" fill="#172b4d" font-weight="bold" text-anchor="start">Normal minimum interval: 60 s</text>
+<text x="682" y="429" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Manual ON/OFF has priority.</text>
+<text x="682" y="461" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Pump: manual control only.</text>
+<text x="36" y="538" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">Numbers are configurable defaults. Requested state is not proof of physical valve position.</text>
+<text x="36" y="568" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">Site: HA automations own control; bridge AUTO disabled. Shutdown may still close the valve.</text>
+</g>
+</svg>
