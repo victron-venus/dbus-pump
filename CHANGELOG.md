@@ -16,7 +16,7 @@ Use the documented update procedure and preserve local configuration. No applica
 
 ### Security
 
-The release gate fails closed on absent, invalid or incomplete fuzz evidence. No application vulnerability or new hardware acceptance is claimed by this validation update.
+RC publication rejects absent or invalid source-bound fuzz reports. The fuzz runner bounds corpus paths, file types and size. No application vulnerability or new target-device acceptance is claimed by these tooling changes.
 
 ## [0.1.7] - Development line
 
