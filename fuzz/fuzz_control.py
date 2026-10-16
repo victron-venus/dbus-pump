@@ -1,4 +1,4 @@
-"""Fuzz the real valve state machine with an explicit monotonic clock."""
+"""Fuzz tank normalization and valve transitions with an explicit clock."""
 
 import math
 import struct
@@ -10,9 +10,46 @@ import atheris
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 with atheris.instrument_imports():
     from dbus_pump.control import MODE_AUTO, MODE_OFF, MODE_ON, ValveController
+    from dbus_pump.tank import normalize_level
+
+
+def check_level_normalization(data: bytes) -> None:
+    value, capacity, offset, radius = struct.unpack("<4d", data[:32].ljust(32, b"\0"))
+    percent = normalize_level(value, "%", 387.0, 18.0, 35.56, "%")
+    if math.isfinite(value):
+        assert percent == max(0.0, min(100.0, value))  # nosec B101 - test oracle
+    else:
+        assert percent is None  # nosec B101 - test oracle
+    for unit in ("%", "cm"):
+        result = normalize_level(value, unit, capacity, offset, radius, unit)
+        invalid_geometry = not math.isfinite(capacity) or capacity < 0
+        if unit == "cm":
+            invalid_geometry = invalid_geometry or (
+                capacity <= 0
+                or not math.isfinite(offset)
+                or not math.isfinite(radius)
+                or radius <= 0
+            )
+        if invalid_geometry:
+            assert result is None  # nosec B101 - invalid geometry must fail closed
+        assert result is None or (math.isfinite(result) and 0 <= result <= 100)  # nosec B101 - test oracle
+        assert normalize_level(value, unit, capacity, offset, radius, "mm") is None  # nosec B101 - test oracle
+    assert normalize_level(True, "%", 387.0, 18.0, 35.56) is None  # nosec B101 - test oracle
+    if (
+        -1000 <= value <= 1000
+        and 1 <= capacity <= 1000
+        and -1000 <= offset <= 1000
+        and 1 <= radius <= 100
+    ):
+        expected = max(
+            0.0, min(100.0, (value - offset) * math.pi * radius * radius / 10 / capacity)
+        )
+        actual = normalize_level(value, "cm", capacity, offset, radius, "cm")
+        assert actual is not None and math.isclose(actual, expected, abs_tol=1e-10)  # nosec B101 - test oracle
 
 
 def test_one_input(data: bytes) -> None:
+    check_level_normalization(data)
     now = 100.0
     control = ValveController(30.0, 80.0, 10.0, 2.0, clock=lambda: now)
     for offset in range(0, min(len(data), 4096) - 11, 12):

@@ -69,24 +69,34 @@ def test_tick_no_control_when_disabled(monkeypatch):
     assert app.client.calls == []
 
 
-def test_tank_remaining_m3_math():
-    f = main_mod._tank_remaining_m3
-    assert f(None, 18.0, 35.56) is None
-    assert f(82.0, 18.0, 0.0) is None  # no geometry -> fallback signal
-    assert f(10.0, 18.0, 35.56) == 0.0  # below dead zone clamps to 0
-    # (28 - 18) cm column, r=35.56: liters / 1000
-    assert f(28.0, 18.0, 35.56) == pytest.approx(10.0 * math.pi * 35.56**2 / 1e6, rel=1e-9)
+def test_tick_cm_source_drives_level_volume_and_control(monkeypatch):
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    monkeypatch.setattr(cfg, "HA_WATER_LEVEL_UNIT", "cm")
+    monkeypatch.setattr(cfg, "TANK_CAPACITY_LITERS", 387.0)
+    monkeypatch.setattr(cfg, "TANK_OFFSET_CM", 18.0)
+    monkeypatch.setattr(cfg, "TANK_RADIUS_CM", 35.56)
+    # 93cm is ~77%, below the close threshold. The old implementation read it
+    # as 93% and would close an open valve. Secondary cm disagrees deliberately.
+    snap = dict(BASE, level=93.0, cm=118.0, level_unit="cm", valve=True)
+    app = build_app(snap)
+    app.services.capacity_m3 = 0.387
+    app.controller._desired = True
+    app.tick()
+    expected_m3 = (93.0 - 18.0) * math.pi * 35.56**2 / 1e6
+    assert app.services.tank.items["/Level"] == round(expected_m3 / 0.387 * 100, 1)
+    assert app.services.tank.items["/Remaining"] == round(expected_m3, 3)
+    assert app.client.calls == []
 
 
-def test_tick_computes_remaining_from_raw_height(monkeypatch):
+def test_percent_source_is_authoritative_over_secondary_height(monkeypatch):
     monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
     monkeypatch.setattr(cfg, "TANK_OFFSET_CM", 18.0)
     monkeypatch.setattr(cfg, "TANK_RADIUS_CM", 35.56)
-    snap = dict(BASE, cm=118.0)
-    app = build_app(snap)
+    app = build_app(dict(BASE, cm=118.0))
+    app.services.capacity_m3 = 0.387
     app.tick()
-    expected_m3 = round((118.0 - 18.0) * math.pi * 35.56**2 / 1e6, 3)
-    assert app.services.tank.items["/Remaining"] == expected_m3
+    assert app.services.tank.items["/Level"] == 50.0
+    assert app.services.tank.items["/Remaining"] == 0.194
 
 
 def test_tick_remaining_falls_back_to_capacity_derivation(monkeypatch):
@@ -150,3 +160,107 @@ def test_stale_close_stays_closed_when_fresh_level_recovers_in_band(monkeypatch)
     now[0] += 1
     app.apply_snapshot(dict(BASE, level=50.0, valve=False))
     assert [call[1] for call in app.client.calls] == ["turn_on", "turn_off"]
+
+
+@pytest.mark.parametrize("timestamp", [1001.0, 880.0, float("nan"), None, "bad"])
+def test_invalid_or_expired_sample_cannot_change_recent_control_decision(monkeypatch, timestamp):
+    monkeypatch.setattr(main_mod, "_now", lambda: 1000.0)
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    app = build_app(dict(BASE))
+    app.controller._clock = lambda: 1000.0
+    app.controller._last_transition = 0.0
+    app.apply_snapshot(dict(BASE, level=50.0))
+    app.apply_snapshot(dict(BASE, level=1.0, _sample_started_at=timestamp))
+    assert app.services.tank["/Level"] is None
+    assert app.client.calls == []
+    assert app.last_ok_time == 1000.0
+    assert app.controller.last_level_time == 1000.0
+
+
+def test_conflicting_ha_unit_is_rejected_without_refreshing_deadline(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(main_mod, "_now", lambda: now[0])
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    app = build_app(dict(BASE))
+    app.controller._clock = lambda: now[0]
+    app.controller._last_transition = 0.0
+    app.apply_snapshot(dict(BASE))
+    now[0] += 1
+    app.apply_snapshot(dict(BASE, level=10.0, level_unit="cm"))
+    assert app.services.tank["/Level"] is None
+    assert app.services.tank["/Remaining"] is None
+    assert app.last_ok_time == 1000.0
+    assert app.client.calls == []
+
+
+def test_rejected_future_sample_cannot_resurrect_when_time_catches_up(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(main_mod, "_now", lambda: now[0])
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    app = build_app(dict(BASE))
+    app.controller._clock = lambda: now[0]
+    app.controller._last_transition = 0.0
+    app.apply_snapshot(dict(BASE))
+    app.apply_snapshot(dict(BASE, level=1, _sample_started_at=1001.0))
+    now[0] = 1002.0
+    app.apply_snapshot(dict(app._last_snapshot, ok=False))
+    assert app.services.tank["/Level"] is None
+    assert app.client.calls == []
+    assert app.last_ok_time == 1000.0
+
+
+def test_cm_cached_sample_expires_without_double_conversion(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(main_mod, "_now", lambda: now[0])
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    monkeypatch.setattr(cfg, "HA_WATER_LEVEL_UNIT", "cm")
+    monkeypatch.setattr(cfg, "TANK_CAPACITY_LITERS", 387.0)
+    monkeypatch.setattr(cfg, "TANK_OFFSET_CM", 18.0)
+    monkeypatch.setattr(cfg, "TANK_RADIUS_CM", 35.56)
+    app = build_app(dict(BASE), enable_control=False)
+    app.services.capacity_m3 = 0.387
+    sample = dict(BASE, level=93.0, level_unit="cm")
+    app.apply_snapshot(sample)
+    level = app.services.tank["/Level"]
+    now[0] += 119
+    app.apply_snapshot(dict(sample, ok=False))
+    assert app.services.tank["/Level"] == level
+    assert app.last_ok_time == 1000.0
+    now[0] += 1
+    app.apply_snapshot(dict(sample, ok=False))
+    assert app.services.tank["/Level"] is None
+    assert app.services.tank["/Remaining"] is None
+    assert app.services.tank["/Connected"] == 0
+
+
+@pytest.mark.parametrize(
+    "level,display,remaining,was_open,threshold,action",
+    [
+        (30.04, 30.0, 0.451, False, 30.0, "turn_on"),
+        (84.96, 85.0, 1.274, True, 85.0, "turn_off"),
+    ],
+)
+def test_display_rounding_does_not_change_control_threshold_or_volume(
+    monkeypatch, level, display, remaining, was_open, threshold, action
+):
+    now = [1000.0]
+    monkeypatch.setattr(main_mod, "_now", lambda: now[0])
+    monkeypatch.setattr(main_mod, "_write_heartbeat", lambda: None)
+    monkeypatch.setattr(cfg, "HA_WATER_LEVEL_UNIT", "%")
+    monkeypatch.setattr(cfg, "TANK_CAPACITY_LITERS", 1500.0)
+    app = build_app(dict(BASE))
+    app.services.capacity_m3 = 1.5
+    app.controller._clock = lambda: now[0]
+    app.controller._last_transition = 0.0
+    app.controller._desired = was_open
+
+    app.apply_snapshot(dict(BASE, level=level, valve=was_open))
+    assert app.services.tank["/Level"] == display
+    # 1500L distinguishes volume calculated before versus after rounding the
+    # displayed percentage. The controller must use the unrounded value too.
+    assert app.services.tank["/Remaining"] == remaining
+    assert app.client.calls == []
+
+    now[0] += 1
+    app.apply_snapshot(dict(BASE, level=threshold, valve=was_open))
+    assert app.client.calls == [("switch", action, cfg.HA_VALVE_SWITCH_ENTITY)]

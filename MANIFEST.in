@@ -1,1 +1,3 @@
 include scripts/validate_scorecard_json.py
+include README.ru.md README.de.md README.nl.md
+recursive-include docs *.md *.svg *.py

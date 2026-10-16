@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600" role="img" aria-labelledby="title desc">
+<title id="title">dbus-pump architecture and command ownership</title>
+<desc id="desc">HA supplies primary level, unit and switch states. Cerbo validates and normalizes the measurement, then publishes native D-Bus and MQTT telemetry. HA automations own site actuation. Bridge AUTO stays disabled, but manual requests and shutdown can still actuate.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#435777"/></marker></defs>
+<rect width="1040" height="600" rx="20" fill="#fff"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<text x="36" y="47" font-size="28" fill="#172b4d" font-weight="bold" text-anchor="start">Water system · data and commands</text>
+<text x="36" y="78" font-size="18" fill="#172b4d" font-weight="normal" text-anchor="start">One primary measurement; explicit units; stable protocol identities</text>
+<rect x="36" y="112" width="282" height="262" rx="14" fill="#edf3fb" stroke="#9db4d1"/>
+<text x="56" y="148" font-size="22" fill="#172b4d" font-weight="bold" text-anchor="start">Home Assistant</text>
+<text x="56" y="183" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Primary level: cm or %</text>
+<text x="56" y="213" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Unit attribute checked</text>
+<text x="56" y="243" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Pump + valve states</text>
+<text x="56" y="273" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Optional raw cm: diagnostics</text>
+<text x="56" y="316" font-size="17" fill="#a04a08" font-weight="bold" text-anchor="start">Existing HA automations</text>
+<text x="56" y="343" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Site actuator owner</text>
+<rect x="366" y="112" width="310" height="262" rx="14" fill="#eaf5ef" stroke="#8dbba2"/>
+<text x="386" y="148" font-size="22" fill="#172b4d" font-weight="bold" text-anchor="start">Cerbo · dbus-pump</text>
+<text x="386" y="183" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">HTTP worker + circuit breaker</text>
+<text x="386" y="213" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Unit / geometry validation</text>
+<text x="386" y="243" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">One normalized % + volume</text>
+<text x="386" y="273" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Main-loop freshness checks</text>
+<text x="386" y="316" font-size="17" fill="#a04a08" font-weight="bold" text-anchor="start">AUTO disabled at this site</text>
+<text x="386" y="343" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Manual / shutdown can actuate</text>
+<rect x="724" y="112" width="280" height="262" rx="14" fill="#edf3fb" stroke="#9db4d1"/>
+<text x="744" y="148" font-size="22" fill="#172b4d" font-weight="bold" text-anchor="start">Native D-Bus</text>
+<text x="744" y="183" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Tank · /Level (%)</text>
+<text x="744" y="213" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">/Capacity, /Remaining (m³)</text>
+<text x="744" y="243" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Pump / valve · /State</text>
+<text x="744" y="273" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Commands · /Mode</text>
+<text x="744" y="316" font-size="17" fill="#176443" font-weight="bold" text-anchor="start">Translated display labels</text>
+<text x="744" y="343" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">IDs + numeric values stable</text>
+<line x1="318" y1="204" x2="366" y2="204" stroke="#165ea8" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="676" y1="204" x2="724" y2="204" stroke="#165ea8" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="864" y1="397" x2="178" y2="397" stroke="#a04a08" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<line x1="864" y1="374" x2="864" y2="397" stroke="#a04a08" stroke-width="2" stroke-dasharray="7 5"/>
+<line x1="178" y1="397" x2="178" y2="375" stroke="#a04a08" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="435" y="426" font-size="15" fill="#a04a08" font-weight="normal" text-anchor="start">Explicit manual / shutdown; AUTO only when enabled</text>
+<rect x="724" y="465" width="280" height="86" rx="14" fill="#f2f4f8" stroke="#9db4d1"/>
+<text x="744" y="500" font-size="18" fill="#172b4d" font-weight="bold" text-anchor="start">GX / VRM + Cerbo MQTT</text>
+<text x="744" y="529" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">Displays and subscribers</text>
+<line x1="864" y1="398" x2="864" y2="458" stroke="#165ea8" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="36" y1="477" x2="85" y2="477" stroke="#165ea8" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="99" y="483" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Telemetry</text>
+<line x1="265" y1="477" x2="314" y2="477" stroke="#a04a08" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="328" y="483" font-size="17" fill="#172b4d" font-weight="normal" text-anchor="start">Actuation path</text>
+<text x="36" y="527" font-size="17" fill="#a04a08" font-weight="normal" text-anchor="start">No arbitration between HA and other switch writers.</text>
+<text x="36" y="562" font-size="15" fill="#172b4d" font-weight="normal" text-anchor="start">Diagram describes the configured site; not a live status or safety certification.</text>
+</g>
+</svg>

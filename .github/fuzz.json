@@ -37,6 +37,14 @@
             "ValveController.set_mode",
             "ValveController.update"
           ]
+        },
+        {
+          "module": "dbus_pump.tank",
+          "functions": [
+            "finite_number",
+            "validate_geometry",
+            "normalize_level"
+          ]
         }
       ]
     }

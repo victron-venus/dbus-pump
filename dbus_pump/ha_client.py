@@ -7,11 +7,12 @@ guarded by a circuit breaker (pattern copied from inverter-control).
 
 import json
 import logging
-import math
 import time
 from typing import Any
 
 import requests
+
+from dbus_pump.tank import finite_number
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 # 'unknown' instead of erroring on an empty entity_id.
 TEMPLATE_BODY = """{{ {
   'level': states('@LEVEL@') | string,
+  'level_unit': state_attr('@LEVEL@', 'unit_of_measurement'),
   'pump': states('@PUMP@'),
   'valve': states('@VALVE@'),
   'cm': states('@CM@') | string
@@ -83,7 +85,11 @@ def state_is_on(state: Any) -> bool | None:
     s = str(state).strip().lower() if state is not None else ""
     if s in ("unavailable", "unknown", "", "none"):
         return None
-    return s in ("on", "running", "open")
+    if s in ("on", "running", "open"):
+        return True
+    if s in ("off", "stopped", "closed"):
+        return False
+    return None
 
 
 class HaClient:
@@ -113,6 +119,7 @@ class HaClient:
             "pump": None,
             "valve": None,
             "cm": None,
+            "level_unit": None,
         }
         self._template = build_template(level_entity, pump_entity, valve_entity, cm_entity)
         self._configured = all((base_url, token, level_entity, pump_entity, valve_entity))
@@ -137,7 +144,7 @@ class HaClient:
         """Fetch level/pump/valve states.
 
         Returns {'level': float|None, 'cm': float|None (raw water-column
-        height), 'pump': bool|None, 'valve': bool|None,
+        height), 'level_unit': str|None, 'pump': bool|None, 'valve': bool|None,
         'ok': bool} where ok=True means the values were fetched live on this
         call. On failure the last-known snapshot is returned with ok=False.
         """
@@ -159,28 +166,17 @@ class HaClient:
             data = json.loads(resp.text)
             if not isinstance(data, dict):
                 raise HomeAssistantAPIError("HA template response must be a JSON object")
-            level_raw = str(data.get("level", "")).strip()
-            try:
-                level: float | None = float(level_raw)
-            except ValueError:
-                level = None
-            if level is not None and not math.isfinite(level):
-                level = None
-            cm_raw = str(data.get("cm", "")).strip()
-            try:
-                water_cm: float | None = float(cm_raw)
-            except ValueError:
-                water_cm = None
-            if water_cm is not None and not math.isfinite(water_cm):
-                water_cm = None
+            level = finite_number(data.get("level"))
+            water_cm = finite_number(data.get("cm"))
             result.update(
                 level=level,
-                cm=water_cm,  # None when sensor unset/unavailable; liters computed in App.tick
+                level_unit=data.get("level_unit"),
+                cm=water_cm,  # diagnostic only; never replaces the authoritative level
                 pump=state_is_on(data.get("pump")),
                 valve=state_is_on(data.get("valve")),
                 ok=level is not None,
             )
-            self.last_known = {k: result[k] for k in ("level", "pump", "valve", "cm")}
+            self.last_known = {k: result[k] for k in ("level", "level_unit", "pump", "valve", "cm")}
             self.breaker.record_success()
         except requests.exceptions.Timeout as exc:
             self.breaker.record_failure()

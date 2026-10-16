@@ -1,438 +1,152 @@
 # dbus-pump
 
-[![Fuzzing: RC only](https://img.shields.io/badge/Fuzzing-RC%20only-blue)](docs/fuzzing.md)
+[English](README.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Nederlands](README.nl.md)
 
+**Version scope:** the explicit unit contract, diagnostic-only secondary sensor, runtime
+localization and command-validation changes below are **unreleased development
+changes**. Use them with this source revision or a later release that includes
+them; older installed releases may behave differently. See [CHANGELOG.md](CHANGELOG.md).
+
+[![Fuzzing: RC only](https://img.shields.io/badge/Fuzzing-RC%20only-blue)](docs/fuzzing.md)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15438/badge)](https://www.bestpractices.dev/projects/15438)
 
-Home-Assistant-backed water tank/pump/valve bridge for Victron Venus OS.
-
-Runs **on the Cerbo GX** and exposes a Home Assistant water system as native
-Venus services:
-
-- `com.victronenergy.tank.ha_tank<N>` (`DEVICE_INSTANCE_TANK`) — fresh-water tank level (`/Level` in %)
-- `com.victronenergy.pump.startstop<P>` (`PUMP_STARTSTOP_INSTANCE`) — well/pressure pump ("Water pump")
-- `com.victronenergy.pump.startstop<V>` (`VALVE_STARTSTOP_INSTANCE`) — city-water shutoff valve ("City water valve")
-
-Venus OS bridges these services to Cerbo MQTT topics
-`N/<portal>/tank/<instance>/Level` and `N/<portal>/pump/<instance>/State`,
-which is what the remote consumers (desktop, dashboards) subscribe to.
-
-The valve admits city water when the tank level drops below the configured
-minimum. Automation lives here (not in HA and not in any other client), so
-there is a single control plane.
-
-### Water data flow
-
-dbus-pump is the **only** water source for every consumer: Venus services on
-D-Bus locally, Cerbo MQTT topics remotely. No client talks to Home Assistant
-for water.
-
-```mermaid
-flowchart LR
-    subgraph HAS["Home Assistant - sensor source only"]
-        LVL["tank level (%)<br/>sensor.water_level_2_water_level"]
-        CM["raw water column (cm)<br/>TANK_WATER_CM_ENTITY"]
-        PSW["switch.pump_switch"]
-        VSW["switch.shutoff_valve"]
-    end
-
-    subgraph GX["Cerbo GX"]
-        DP["dbus-pump<br/>hysteresis + fail-safe automation"]
-        subgraph DBUS["Venus D-Bus"]
-            TANK["com.victronenergy.tank.ha_tank21<br/>/Level /Capacity /Remaining /Status"]
-            PUMP["com.victronenergy.pump.startstop1<br/>Water pump /State"]
-            VALVE["com.victronenergy.pump.startstop2<br/>City water valve /State"]
-        end
-        MQB["Cerbo MQTT broker"]
-        CTRL["inverter-control<br/>water.py reader"]
-    end
-
-    TOPICS["N/&lt;portal&gt;/tank/21/Level<br/>N/&lt;portal&gt;/pump/1/State<br/>N/&lt;portal&gt;/pump/2/State"]
-
-    LVL --> DP
-    CM --> DP
-    DP -- REST poll --> LVL
-    DP -- actuation callback --> PSW
-    DP -- actuation callback --> VSW
-
-    DP --> TANK
-    DP --> PUMP
-    DP --> VALVE
-    TANK --> MQB
-    PUMP --> MQB
-    VALVE --> MQB
-
-    CTRL -- D-Bus reads --> DBUS
-    MQB --> TOPICS
-    TOPICS --> GXUI["GX UI / VRM"]
-    TOPICS --> DESK["inverter-desktop"]
-    TOPICS --> PYDASH["inverter-dashboard"]
-    TOPICS --> GODASH["inverter-dashboard-go"]
-```
-
-Consumers and the paths they read:
-
-| Consumer | Source | Path/topic |
-| --- | --- | --- |
-| GX UI / VRM | D-Bus | native tank gauge + pump/valve devices |
-| inverter-control (on GX) | D-Bus | `com.victronenergy.tank.ha_tank21` `/Level`, `pump.startstop{1,2}` `/State` |
-| inverter-desktop | Cerbo MQTT | `N/<portal>/tank/+/Level`, `N/<portal>/pump/+/State` (plain instance in 4th segment) |
-| inverter-dashboard | Cerbo MQTT | same, gated by `CERBO_PORTAL_ID` |
-| inverter-dashboard-go | Cerbo MQTT | same, `cerbo:` config section |
-
-Valve/pump hysteresis sequence (automation is entirely inside dbus-pump):
-
-```mermaid
-sequenceDiagram
-    participant S as Tank level sensor
-    participant DP as dbus-pump
-    participant V as Valve switch (HA)
-    S->>DP: level % (fresh)
-    alt level <= VALVE_START_VALUE (30%)
-        DP->>V: turn ON (admit city water)
-    else level >= VALVE_STOP_VALUE (85%)
-        DP->>V: turn OFF
-    else stale > SENSOR_STALE_TIMEOUT
-        DP->>V: force OFF (fail-safe)
-    end
-    Note over DP: MIN_SWITCH_INTERVAL anti-chatter<br/>between transitions
-```
-
-## Python runtime
-
-Native Venus OS packages target **Python 3.12.x**. The audited Cerbo on Venus OS
-v3.75 reports Python **3.12.13**; the [official Venus OS v3.79 manifest](https://updates.victronenergy.com/feeds/venus/release/sdk/venus-scarthgap-x86_64-arm-cortexa8hf-neon-toolchain-v3.79.target.manifest)
-also ships 3.12.13. Local development and CI use `.python-version` / Python
-3.12.13. Package metadata accepts 3.12 patch updates and rejects other minor
-versions until they have been validated. Use the firmware's system interpreter
-and its matching D-Bus/GI libraries on the device; do not replace the OS Python.
-
-<!-- ci-release-process:start -->
-## Release process
-
-See the [release strategy](RELEASING.md) for validation, nightly, beta, RC and stable promotion rules, and the [operator runbook](docs/release-workflow.md) for local commands.
-<!-- ci-release-process:end -->
-
-## Configuration
-
-Copy `local_config.example.py` to `local_config.py` on the device and fill in:
-
-| Key | Meaning | Default |
-| --- | --- | --- |
-| `HA_URL` / `HA_TOKEN` | Home Assistant REST endpoint + long-lived token | — |
-| `HA_WATER_LEVEL_ENTITY` | tank level sensor (%) | `sensor.water_level_2_water_level` |
-| `TANK_CAPACITY_LITERS` | tank size → `/Capacity`; GUIv2 needs it for liters | 0 |
-| `TANK_WATER_CM_ENTITY` / `TANK_OFFSET_CM` / `TANK_RADIUS_CM` | raw water-column sensor (cm) + geometry → `/Remaining`, computed here | — |
-| `HA_PUMP_SWITCH_ENTITY` | pump switch | `switch.pump_switch` |
-| `HA_VALVE_SWITCH_ENTITY` | shutoff valve switch | `switch.shutoff_valve` |
-| `DEVICE_INSTANCE_TANK` | D-Bus device instance for the tank service | 21 |
-| `PUMP_STARTSTOP_INSTANCE` / `VALVE_STARTSTOP_INSTANCE` | startstop instances | 1 / 2 |
-| `VALVE_START_VALUE` / `VALVE_STOP_VALUE` | hysteresis: open below / close above (%) | 30 / 85 |
-| `SENSOR_STALE_TIMEOUT` | s without fresh level → force valve CLOSED | 120 |
-| `MIN_SWITCH_INTERVAL` | anti-chatter min seconds between transitions | 60 |
-| `ENABLE_CONTROL` | master switch for automated actuation | False |
-
-### Tank capacity and remaining liters
-
-GUIv2 shows the tank gauge in percent only until it knows the tank size.
-The bridge publishes `/Capacity` from `TANK_CAPACITY_LITERS` (D-Bus uses m³;
-liters are converted internally).
-
-Venus OS does not derive `/Remaining` for third-party tanks, and level % is
-not volume-proportional when the sensor has a dead zone at the bottom.
-dbus-pump therefore computes remaining liters itself from the raw
-water-column sensor (`TANK_WATER_CM_ENTITY`, cm):
-
-    liters = (cm − TANK_OFFSET_CM) × π × TANK_RADIUS_CM² / 1000
-
-`TANK_OFFSET_CM` is the sensor reading at an empty tank (site values:
-18 cm), `TANK_RADIUS_CM` the cylinder radius (35.56 cm). Readings below
-the offset clamp to 0 L. If the raw sensor is unavailable, `/Remaining`
-falls back to `Capacity × Level`.
-
-## Install
-
-
-Via SetupHelper PackageManager (GUI v1): drop the repo in `/data/dbus-pump`
-(must contain `version` + `setup`). Then Settings → PackageManager → install,
-or:
-
-```sh
-/data/dbus-pump/setup install
-/data/dbus-pump/setup uninstall
-```
-
-`gitHubInfo` is `victron-venus:latest`. Device-local `local_config.py` is not overwritten.
-
-
-```sh
-./deploy.sh          # streams repo to Cerbo, runs update.sh there
-./restart.sh         # restart the service only
-ssh Cerbo 'tail -f /var/log/dbus-pump-ha/current'   # logs
-```
-
-Uninstall:
-
-```sh
-ssh Cerbo '/data/dbus-pump/setup uninstall'
-```
-
-## Autostart and firmware coexistence
-
-Installation enables automatic startup on every Cerbo boot. The persistent
-service definitions stay in `/data/dbus-pump/service/dbus-pump`; their unique
-supervisor link is `/service/dbus-pump-ha`. `update.sh` installs `boot.sh` and
-one managed invocation in `/data/rc.local`, before an existing `exit 0`.
-The same helper runs during installation and late boot, after the Venus service
-overlay is mounted. It waits up to 20 seconds for the `/service` directory and
-retries each supervisor startup request for up to 20 seconds. The directory
-check alone is not a mount readiness check for an earlier boot stage.
-Repeated calls preserve the owned link and running service directories.
-
-Venus OS already provides a **different** `/service/dbus-pump` service. At boot,
-the firmware copies its service templates into `/service`, including a `down`
-marker for its native pump function. Older versions of this project's boot hook
-correctly refused to replace that directory, but consequently never linked the
-HA bridge after a reboot. Version 0.1.6 uses the separate `dbus-pump-ha` name.
-It leaves the native directory, its `down` marker, and firmware files untouched.
-Do not delete the native service or remove its marker to repair this bridge.
-
-An old `/service/dbus-pump` **symlink** is migrated only if it points exactly to
-this project's persistent service directory. Its inode and supervisor directory
-handles are retained. Unknown symlinks and occupied new service paths fail
-closed. Updates preserve device-local `local_config.py`; they do not enable
-`ENABLE_CONTROL` or change D-Bus device instances. Logger output moves to its
-own directory so it cannot contend with the native firmware logger.
-
-Check after installation:
-
-```sh
-svstat /service/dbus-pump-ha /service/dbus-pump-ha/log
-readlink /service/dbus-pump-ha
-# Expected: /data/dbus-pump/service/dbus-pump
-sh /data/dbus-pump/boot.sh  # idempotent link/startup recovery, not a restart
-```
-
-Confirm that the tank and both pump services expose fresh HA-derived values on
-D-Bus. Testing the helper against a removed custom link checks reconstruction;
-it does not claim that a complete hardware reboot was tested. Uninstall stops
-and detaches only positively identified project links and removes its managed
-boot hook, preserving the native service and local configuration.
-
-For rollback, keep a private copy of the installed package and local
-configuration, and record the exact release/checksum. Versions before 0.1.6
-reuse the conflicting service name: simply reinstalling an older package is
-not a reliable autostart rollback. Restore a previously accepted package together
-with a compatible boot hook, verify service ownership, then check telemetry.
-A restart or uninstall retains the existing graceful-shutdown valve-close
-behavior, including when `ENABLE_CONTROL=False`; that option disables automatic
-hysteresis, not manual D-Bus commands or the shutdown close action. Do not restart
-the bridge solely as a non-actuating health probe.
-
-## Safety model
-
-- **Hysteresis**: valve opens at ≤ `VALVE_START_VALUE`, closes at ≥
-  `VALVE_STOP_VALUE`. No oscillation around one threshold.
-- **Stale sensor fail-safe**: no fresh level reading within
-  `SENSOR_STALE_TIMEOUT` → AUTO requests valve CLOSED; tank `/Status` = 4 (unknown sensor).
-  After a stale close, a fresh level inside the hysteresis band keeps the valve
-  closed. Reopening requires a fresh level at or below `VALVE_START_VALUE` and
-  the normal `MIN_SWITCH_INTERVAL` since the close. Repeated stale observations
-  do not extend that interval.
-- **Manual override**: `/Mode` on each startstop service bypasses automation
-  (0 auto, 1 always-on, 2 always-off).
-- **Graceful shutdown**: SIGTERM forces the valve CLOSED before exiting.
-- Residual risk: if the Cerbo loses power while the valve is open, nothing
-  closes it. Accept this or add a hardware NC interlock.
-
-### Command ownership and limits
-
-`dbus-pump` is the command owner for its configured HA pump and valve switches.
-The valve's AUTO policy and explicit D-Bus `/Mode` requests share one worker;
-the pump has manual ON/OFF control only. Disable HA/Node-RED schedules and other
-writers for these same actuators before enabling AUTO. Separate D-Bus instance
-numbers prevent a name collision, not two programs operating the same switch.
-The bridge provides no cross-host lock or arbitration with another HA caller.
-
-`ENABLE_CONTROL=False` disables AUTO decisions, not explicit manual requests or
-the shutdown close. Manual ON intentionally bypasses the level/stale policy;
-only use it under direct operator supervision. A missing or invalid level never
-renews the original monotonic freshness deadline. Once it expires, AUTO asks for
-OFF if the valve's best-known state differs; an entirely unknown initial valve
-state is not commanded blindly. An HA service acknowledgement is not proof of
-physical closure: check subsequent switch telemetry and the physical interlock.
-
-This component must not write ESS setpoints, charger controls, thermostat
-settings, or unrelated relays. Inverter/dashboards consume its telemetry;
-actuation belongs through the owned `/Mode` interface. No archived governance
-service enforces these boundaries. Deterministic tests cover stale recovery,
-manual priority and queued-command compensation; device acceptance remains a
-separate check.
-
-## Conflict with native "Pump start/stop"
-
-If the GX's native *Pump start/stop* relay feature is enabled it owns
-`startstop0` plus relay function 3. This service uses instances ≥ 1 by
-default so both can coexist; disable the native feature (Settings → Relay)
-if you want full GX-side pump semantics.
-
-## D-Bus responsiveness and HA requests
-
-One background worker performs HA HTTP requests, using the existing request
-timeout and circuit breaker. Polls never overlap, and a slow poll does not
-block D-Bus reads. Results and device-state changes are applied on the GLib
-main loop. While a poll is outstanding, the main loop still expires stale
-sensor data and evaluates the existing valve fail-safe.
-
-Manual and automatic switch requests use the same worker. The queue holds at
-most eight operations; a full queue rejects a new `/Mode` write instead of
-blocking D-Bus. An accepted `/Mode` means the request was queued; `/State`
-changes only after HA acknowledges it. New commands supersede older queued
-commands for the same switch. A request already sent to HA cannot be cancelled,
-so an opposite safety decision is queued after it and retried if necessary.
-Returning to AUTO re-evaluates the cached sample without making it fresh when
-automation is enabled. Monitoring-only operation still does not make automatic
-switch decisions.
-
-Shutdown discards pending work, finishes the active request, then attempts the
-existing valve-close action on the same worker and closes the HTTP session.
-The shutdown wait is bounded to 15 seconds; an exceeded deadline is logged as
-an unconfirmed valve closure. Power loss and an unreachable HA remain the
-same limits on software-controlled valve closure.
-
-## Troubleshooting
-
-- **Tank shows fault / level frozen**: HA unreachable or sensor stale. The
-  circuit breaker opens after 5 consecutive failures for 60 s; last-known
-  values keep being served. Check `local_config.py` token validity.
-- **Valve not actuating**: `ENABLE_CONTROL` still False? Logs (throttled to
-  once/min) say why commands are suppressed.
-- **Service down**: `svstat /service/dbus-pump-ha /service/dbus-pump-ha/log`;
-  bounded multilog output is under `/var/log/dbus-pump-ha` (25 KB × 4 archives).
-  Run `sh /data/dbus-pump/boot.sh` to restore a missing owned link and request
-  startup. A successful startup request is not a telemetry health check.
-
-## Development
-
-```sh
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-python3 -m pytest tests/
-python3 -m ruff check .
-```
-
-Tests run fully off-GX (D-Bus and HA are mocked).
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-
-
-## Venus OS installation and recovery
-
-Use the canonical `/data/dbus-pump` directory. Both `setup install`
-(SetupHelper/PackageManager) and the workstation `deploy.sh` call `update.sh`.
-A release is staged under volatile `/tmp` before stopping the service, so
-reinstalling from the installed tree does not delete the update source.
-The updater preserves `local_config.py`; `deploy.sh` deliberately replaces it
-when the workstation has a local copy (`PUSH_LOCAL_CONFIG=1`).
-Existing service and log directory inodes, ownership, supervisor state and the
-owned `/service/dbus-pump-ha` symlink are preserved. The application is stopped;
-run scripts are replaced atomically. A healthy logger keeps running unless its
-run definition changed, such as the migration to its private log directory.
-Ordinary updates do not restart PackageManager. A stuck application receives
-one supervisor-scoped kill after twenty seconds; installation aborts if it is
-still running after twenty-five seconds. Unexpected service links or an occupied
-`/service/dbus-pump-ha` path are rejected before stopping anything. The native
-`/service/dbus-pump` directory and firmware files are preserved in place.
-
-Service definitions persist under `/data/dbus-pump/service/dbus-pump`.
-`/service/dbus-pump-ha` is a symlink recreated by `/data/rc.local`, including
-when that script already ends with `exit 0`. The logger creates
-`/var/log/dbus-pump-ha` and uses bounded `multilog` rotation (`s25000 n4`).
-On the audited Venus OS image, `/var/log` resolves to persistent `/data/log`,
-so these logs write flash. Heartbeats live in volatile `/run` storage.
-Runtime data does not require writes to the
-read-only firmware filesystem. Firmware updates can replace system Python
-packages; check dependencies after each update before assuming the service is
-healthy. The installer does not run `pip` or upgrade system packages.
-
-Before installation, check the target interpreter:
+A Home Assistant water-tank, pump and valve bridge for **Victron Venus OS**.
+It runs on the Cerbo GX, reads HA entities and publishes native D-Bus services
+for GX displays and Cerbo MQTT consumers. Optional valve automation uses level
+hysteresis; pump control is manual.
+
+![HA readings pass through unit conversion on Cerbo to native tank and pump services; optional commands return to HA.](docs/assets/architecture.svg)
+
+**Choose the sensor unit explicitly.** A reading of `93 cm` must not become
+`93%`. Set `HA_WATER_LEVEL_UNIT = "cm"` for a height sensor or `"%"` for an
+already normalized percentage. The [calibration guide](docs/operator/calibration.md)
+explains the conversion and its limits.
+
+## Quick start
+
+Use the system **Python 3.12.x** and its matching D-Bus/GI libraries on Venus
+OS. Development is pinned to Python 3.12.13 in [`.python-version`](.python-version).
+The installer does not install Python packages or replace firmware Python.
+
+1. Place the package under `/data/dbus-pump` on the GX.
+2. Copy `local_config.example.py` to `local_config.py`, then set your HA URL,
+   token, entities, source unit and measured tank dimensions. Keep the token
+   private; `local_config.py` is ignored by Git.
+3. Leave `ENABLE_CONTROL = False` while verifying telemetry and ownership.
+4. Check dependencies and install:
 
 ```sh
 python3 --version
 python3 -c "import requests, dbus; from gi.repository import GLib"
-```
-
-Verify a running process and its D-Bus data after installation:
-
-```sh
+/data/dbus-pump/setup install
 svstat /service/dbus-pump-ha /service/dbus-pump-ha/log
 readlink /service/dbus-pump-ha
 tail -n 40 /var/log/dbus-pump-ha/current
 ```
 
-`update.sh` confirms termination before copying but does not wait for a fresh
-process or heartbeat after requesting startup. The deployment caller must
-verify startup and D-Bus availability.
+The symlink must target `/data/dbus-pump/service/dbus-pump`. The firmware's
+separate `/service/dbus-pump` is not this bridge. A running process is only the
+first check: also verify fresh `/Level`, `/Remaining`, `/Connected` and switch
+states against HA. See [installation, updates and rollback](docs/operator/installation.md).
 
-`deploy.sh` fails if a fresh heartbeat does not appear within 60 seconds or the
-service never reaches `up`. A heartbeat proves the loop is running, not that
-Home Assistant is reachable: also inspect `/Connected` and the log. Restore a
-previous accepted release only with the compatible autostart layout described
-above, keeping the device-local configuration. Pre-0.1.6 scripts alone reintroduce
-the boot-name collision.
-Installer regressions cover repeated updates with live directory handles,
-supervisor-state and ownership preservation, atomic run-script replacement,
-configuration, safe rejection before stopping, and boot hooks before `exit 0`.
+## Configuration example
 
-### Invalid sensor readings
+These entity names and dimensions describe the configured installation; verify
+them against your own HA entity registry and physical tank before reuse.
 
-An unavailable, missing or non-finite HA level does not refresh the existing
-sensor deadline. AUTO holds its previous decision within that grace window,
-then requests the existing stale-sensor valve closure at
-`SENSOR_STALE_TIMEOUT` (120 seconds by default). Manual ON/OFF modes retain their
-existing priority. A subsequent valid level resumes normal hysteresis without
-changing the configured thresholds or timings.
-The worker carries the monotonic request start time through callback delivery;
-a delayed result cannot renew sensor freshness. Main-loop ticks continue to
-write the heartbeat while a request is blocked.
+```python
+HA_URL = "http://homeassistant.local:8123"
+HA_TOKEN = "replace_with_private_long_lived_token"
+HA_WATER_LEVEL_ENTITY = "sensor.water_level_2_water_level"
+HA_WATER_LEVEL_UNIT = "cm"
+HA_PUMP_SWITCH_ENTITY = "switch.pump_power_enable"
+HA_VALVE_SWITCH_ENTITY = "switch.shutoff_valve"
+TANK_CAPACITY_LITERS = 387.0
+TANK_WATER_CM_ENTITY = "sensor.water_cm"
+TANK_OFFSET_CM = 18.0
+TANK_RADIUS_CM = 35.56
+LANGUAGE = "en"  # en, ru, de, nl
+ENABLE_CONTROL = False
+```
 
-Unknown level and expired tank data publish unavailable `/Level` and
-`/Remaining`; unavailable volume is not represented as a measured empty tank.
-Non-finite raw height is ignored, allowing the existing capacity/level
-calculation when a valid level is present. Malformed JSON objects are handled
-as failed polls instead of escaping the worker callback. Deterministic local
-tests cover valid-to-unavailable transitions, NaN/infinity, the original stale
-deadline, manual modes, volume invalidation and recovery. HA success still does
-not independently prove freshness of the physical sensor or valve actuation.
+For this vertical cylindrical tank, `93 cm` represents approximately **297.94 L
+and 76.99%**, not 93%. `/Capacity` and `/Remaining` use **m³** on D-Bus; `/Level`
+always uses **%**. See the [complete configuration reference](docs/operator/configuration.md).
 
-### Native D-Bus startup
+![Calibration curve for a 387 L vertical cylinder with an 18 cm empty offset and 35.56 cm radius.](docs/assets/calibration.svg)
 
-The service constructs `VeDbusService` with `register=False`, creates all paths,
-applies configured initial values, and then registers each well-known name once.
-The production bridge starts with `/Connected = 0` until it has a valid source
-snapshot. A failure during initialization does not expose a partial service.
-This uses the Venus OS registration lifecycle; it does not change local control
-settings, source freshness deadlines, or the installer layout.
+## Interfaces and control ownership
 
-## Contributing and security
+Default D-Bus identities are stable across languages:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for reports, development checks and pull requests,
-[SECURITY.md](SECURITY.md) for private vulnerability reporting and deployment trust boundaries,
-and the [OpenSSF evidence index](docs/openssf-evidence.md) for assessment references and remaining verification.
+- Tank: `com.victronenergy.tank.ha_tank21`, instance `21`.
+- Pump: `com.victronenergy.pump.startstop1`, instance `1`.
+- City-water valve: `com.victronenergy.pump.startstop2`, instance `2`.
+- MQTT telemetry: `N/<portal>/tank/21/Level`,
+  `N/<portal>/pump/1/State`, `N/<portal>/pump/2/State`.
 
-## Project governance and quality
+`/Mode` is `0` AUTO, `1` ON, `2` OFF. `/State` is `0` stopped/closed,
+`1` running/open, or unavailable when unknown. Language selection translates
+display labels, never entity IDs, D-Bus names/paths or numeric values.
 
-See [contribution guidance](CONTRIBUTING.md), [governance and responsibilities](GOVERNANCE.md),
-[code of conduct](CODE_OF_CONDUCT.md), and the [maintenance roadmap](ROADMAP.md).
-The [quality evidence](docs/quality-evidence.md) and [security assurance argument](docs/security-assurance.md)
-explain the checks, their scope and outstanding work. The
-[OpenSSF evidence](docs/openssf-evidence.md) records progress without claiming an
-unearned badge.
+**`ENABLE_CONTROL=False` disables automatic decisions only.** Manual D-Bus
+requests and graceful-shutdown valve closure can still actuate equipment.
+The configured installation has HA automations controlling the pump and valve;
+the bridge must remain with AUTO disabled unless an operator deliberately
+transfers ownership. There is no lock or arbitration between competing writers.
 
-## Release-candidate fuzzing
+When enabled, valve AUTO opens at ≤30% and closes at ≥85% by default, with
+60 seconds between normal transitions. Stale data triggers a close request
+after 120 seconds. Manual ON overrides the automatic stale-level policy.
+Power loss or unreachable HA can prevent physical closure. Read the
+[control and failure model](docs/operator/control.md) before enabling automation.
 
-The target varies sensor values, sample ages, freshness and requested modes over bounded sequences. It calls the real ValveController with an explicit monotonic clock and checks invalid-mode rejection, manual mode semantics and closure when evidence expires. It does not connect to Home Assistant, D-Bus, pumps or valves.
+![Valve hysteresis holds its previous state between 30 and 85 percent; stale AUTO data requests closure.](docs/assets/hysteresis.svg)
 
-[RC-only fuzzing policy, local reproduction and failure handling](docs/fuzzing.md).
+## Operations and troubleshooting
+
+- Wrong percentage or liters: verify HA units, configured capacity and geometry;
+  do not infer a unit from an entity name. [Calibration](docs/operator/calibration.md).
+- Unavailable/frozen level: check HA connectivity, token and sensor state. Invalid
+  readings do not renew the freshness deadline. [Troubleshooting](docs/operator/troubleshooting.md).
+- Service missing after boot: inspect `dbus-pump-ha`, then use the documented boot
+  recovery procedure. Do not remove the native firmware service.
+- A restart may close the valve. Use status and telemetry reads for health checks.
+
+## Documentation and languages
+
+- [Operator guide](docs/operator/README.md): installation, configuration,
+  calibration, control, troubleshooting and localization.
+- [Wiki source](docs/wiki/Home.md) and [wiki publication](docs/wiki/README.md):
+  version-controlled pages and navigation for the GitHub wiki.
+- [Architecture and trust boundaries](docs/architecture.md),
+  [historical deployment evidence](docs/DEPLOYMENT-NOTES.md).
+- [Localization guide](docs/operator/localization.md): runtime labels,
+  translation scope and adding a language.
+- [SVG source and regeneration](docs/assets/README.md).
+
+## Development and releases
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the pinned environment and all required
+checks. A focused application run uses:
+
+```sh
+.venv/bin/python -m pytest tests/
+.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff format --check .
+python3 docs/assets/generate.py --check
+```
+
+Tests use controlled fixtures off-device. A passing test or generated diagram
+does not establish physical valve closure or a completed hardware reboot.
+
+<!-- ci-release-process:start -->
+See the [release strategy](RELEASING.md) for validation, nightly, beta, RC and stable promotion rules, and the [operator runbook](docs/release-workflow.md) for local commands.
+<!-- ci-release-process:end -->
+
+[Changelog](CHANGELOG.md) · [Security](SECURITY.md) ·
+[Quality evidence](docs/quality-evidence.md) · [OpenSSF evidence](docs/openssf-evidence.md) ·
+[Governance](GOVERNANCE.md) · [Code of conduct](CODE_OF_CONDUCT.md) ·
+[Roadmap](ROADMAP.md) · [RC fuzzing](docs/fuzzing.md)
+
+MIT — see [LICENSE](LICENSE).

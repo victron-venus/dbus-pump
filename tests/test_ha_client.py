@@ -56,6 +56,7 @@ def test_state_is_on_mapping():
     assert state_is_on("unavailable") is None
     assert state_is_on("unknown") is None
     assert state_is_on("") is None
+    assert state_is_on("unexpected") is None
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")
@@ -72,6 +73,25 @@ def test_poll_success(post):
     assert args[0] == "http://ha:8123/api/template"
     assert "states('sensor.level')" in kwargs["json"]["template"]
     assert "states('sensor.water_cm')" in kwargs["json"]["template"]
+    assert "state_attr('sensor.level', 'unit_of_measurement')" in kwargs["json"]["template"]
+
+
+@patch("dbus_pump.ha_client.requests.Session.post")
+def test_poll_preserves_unit_metadata_with_cached_sample(post):
+    post.return_value = MagicMock(
+        status_code=200,
+        text=json.dumps({"level": "93", "level_unit": "cm", "pump": "off", "valve": "off"}),
+    )
+    client = make_client()
+    first = client.poll()
+    assert first["level_unit"] == "cm"
+    from requests.exceptions import Timeout
+
+    post.side_effect = Timeout("offline")
+    cached = client.poll()
+    assert cached["ok"] is False
+    assert cached["level"] == 93
+    assert cached["level_unit"] == "cm"
 
 
 @patch("dbus_pump.ha_client.requests.Session.post")
