@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="1050" viewBox="0 0 1040 1050" role="img" aria-labelledby="title desc">
+<title id="title">Calibrated tank result and timestamped software observation</title>
+<desc id="desc">Mathematical comparison, not a measured time series: the incorrect old mapping uses raw centimeters as percent. The calibrated vertical-cylinder model uses 387 L capacity, 18 cm empty offset and 35.56 cm radius, bounded to 0-100 percent. At 49 cm the model gives 31.82 percent. Separately, the saved read-only observation at 2026-10-16T03:13:49Z from version 0.1.7+units.2c5045f reported 49 cm, D-Bus level 31.8 percent, remaining 0.123 cubic meters or 123 L, connected 1, pump 1, valve 0, automatic control false, and heartbeat age 0.98 seconds. This snapshot is not live and does not verify physical valve position or water level.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#435777"/></marker></defs>
+<rect width="1040" height="1050" rx="20" fill="#fff"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect width="1040" height="1050" rx="20" fill="#f3f6fc"/>
+<path d="M20 0 H1020 Q1040 0 1040 20 V116 H0 V20 Q0 0 20 0Z" fill="#172653"/>
+<circle cx="969" cy="17" r="109" fill="#2866d8" opacity=".23"/>
+<circle cx="1025" cy="105" r="106" fill="#1eb69b" opacity=".14"/>
+<text x="32" y="29" font-size="13" fill="#99e8db" font-weight="bold" text-anchor="start">RESULT / MATHEMATICAL COMPARISON + SAVED OBSERVATION</text>
+<text x="32" y="66" font-size="29" fill="#ffffff" font-weight="bold" text-anchor="start">Height is not percentage.</text>
+<text x="32" y="95" font-size="16" fill="#dce5ff" font-weight="normal" text-anchor="start">A calibrated tank model replaces the incorrect assumption that a centimeter equals one percent.</text>
+<rect x="32" y="136" width="976" height="482" rx="14" fill="#ffffff" stroke="#d4deee"/>
+<text x="52" y="171" font-size="22" fill="#172b4d" font-weight="bold" text-anchor="start">Calculated model comparison</text>
+<line x1="52" y1="199" x2="90" y2="199" stroke="#c53c41" stroke-width="3" stroke-dasharray="7 5"/>
+<text x="100" y="204" font-size="15" fill="#c53c41" font-weight="bold" text-anchor="start">Wrong mapping: raw cm as %</text>
+<line x1="491" y1="199" x2="529" y2="199" stroke="#087e73" stroke-width="4"/>
+<text x="539" y="204" font-size="15" fill="#087e73" font-weight="bold" text-anchor="start">Calibrated: usable volume / capacity</text>
+<text x="104" y="228" font-size="13" fill="#435777" font-weight="bold" text-anchor="start">Tank level (%)</text>
+<text x="904" y="228" font-size="13" fill="#087e73" font-weight="bold" text-anchor="end">Full tank at 115.418 cm</text>
+<rect x="104" y="238" width="120.000" height="270" fill="#edf1f7"/>
+<line x1="104" y1="508.0" x2="904" y2="508.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="88" y="513.0" font-size="13" fill="#435777" font-weight="normal" text-anchor="end">0</text>
+<line x1="104" y1="451.75" x2="904" y2="451.75" stroke="#dbe3ef" stroke-width="1"/>
+<text x="88" y="456.75" font-size="13" fill="#435777" font-weight="normal" text-anchor="end">25</text>
+<line x1="104" y1="395.5" x2="904" y2="395.5" stroke="#dbe3ef" stroke-width="1"/>
+<text x="88" y="400.5" font-size="13" fill="#435777" font-weight="normal" text-anchor="end">50</text>
+<line x1="104" y1="339.25" x2="904" y2="339.25" stroke="#dbe3ef" stroke-width="1"/>
+<text x="88" y="344.25" font-size="13" fill="#435777" font-weight="normal" text-anchor="end">75</text>
+<line x1="104" y1="283.0" x2="904" y2="283.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="88" y="288.0" font-size="13" fill="#435777" font-weight="normal" text-anchor="end">100</text>
+<line x1="104" y1="238.0" x2="904" y2="238.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="88" y="243.0" font-size="13" fill="#435777" font-weight="normal" text-anchor="end">120</text>
+<line x1="104.0" y1="238" x2="104.0" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="104.0" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">0</text>
+<line x1="224.0" y1="238" x2="224.0" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="224.0" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">18</text>
+<line x1="370.66666666666663" y1="238" x2="370.66666666666663" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="370.66666666666663" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">40</text>
+<line x1="504.0" y1="238" x2="504.0" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="504.0" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">60</text>
+<line x1="637.3333333333333" y1="238" x2="637.3333333333333" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="637.3333333333333" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">80</text>
+<line x1="770.6666666666667" y1="238" x2="770.6666666666667" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="770.6666666666667" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">100</text>
+<line x1="904.0" y1="238" x2="904.0" y2="508" stroke="#e6edf6" stroke-width="1"/>
+<text x="904.0" y="532" font-size="13" fill="#435777" font-weight="normal" text-anchor="middle">120</text>
+<line x1="873.4509085186429" y1="508.0" x2="873.4509085186429" y2="283.0" stroke="#087e73" stroke-width="1.5" stroke-dasharray="3 5"/>
+<line x1="104.0" y1="508.0" x2="904.0" y2="238.0" stroke="#c53c41" stroke-width="3" stroke-dasharray="7 5"/>
+<polyline points="104.000,508.000 224.000,508.000 873.451,283.000 904.000,283.000" fill="none" stroke="#087e73" stroke-width="4"/>
+<line x1="430.6666666666667" y1="508.0" x2="430.6666666666667" y2="397.75" stroke="#92641d" stroke-width="1.5" stroke-dasharray="3 4"/>
+<circle cx="430.667" cy="397.750" r="6" fill="#c53c41" stroke="#ffffff" stroke-width="2"/>
+<circle cx="430.667" cy="436.401" r="7" fill="#087e73" stroke="#ffffff" stroke-width="2"/>
+<text x="250.66666666666669" y="367.75" font-size="14" fill="#c53c41" font-weight="bold" text-anchor="start">49.0% wrong mapping</text>
+<text x="445.6666666666667" y="460.4010548140373" font-size="14" fill="#087e73" font-weight="bold" text-anchor="start">31.8% calibrated</text>
+<text x="164.0" y="294.25" font-size="12" fill="#435777" font-weight="normal" text-anchor="middle">offset</text>
+<text x="430.6666666666667" y="533" font-size="14" fill="#82520e" font-weight="bold" text-anchor="middle">49</text>
+<text x="504" y="564" font-size="15" fill="#435777" font-weight="normal" text-anchor="middle">Primary sensor reading (cm)</text>
+<text x="52" y="593" font-size="14" fill="#172b4d" font-weight="normal" text-anchor="start">Model: 387 L capacity · 18 cm empty offset · 35.56 cm radius · output bounded to 0-100%</text>
+<rect x="32" y="642" width="976" height="311" rx="14" fill="#ffffff" stroke="#acd7c8"/>
+<text x="52" y="674" font-size="12" fill="#087e73" font-weight="bold" text-anchor="start">SAVED READ-ONLY OBSERVATION</text>
+<text x="52" y="708" font-size="25" fill="#172b4d" font-weight="bold" text-anchor="start">2026-10-16 03:13:49 UTC</text>
+<text x="988" y="705" font-size="13" fill="#c53c41" font-weight="bold" text-anchor="end">SNAPSHOT · NOT LIVE</text>
+<rect x="52" y="730" width="300" height="102" rx="14" fill="#e7f0ff" stroke="#e7f0ff"/>
+<text x="70" y="755" font-size="12" fill="#165ea8" font-weight="bold" text-anchor="start">PRIMARY READING</text>
+<text x="70" y="808" font-size="45" fill="#165ea8" font-weight="bold" text-anchor="start">49</text>
+<text x="327" y="806" font-size="23" fill="#165ea8" font-weight="bold" text-anchor="end">cm</text>
+<rect x="370" y="730" width="300" height="102" rx="14" fill="#e1f5ed" stroke="#e1f5ed"/>
+<text x="388" y="755" font-size="12" fill="#087e73" font-weight="bold" text-anchor="start">D-BUS LEVEL</text>
+<text x="388" y="808" font-size="45" fill="#087e73" font-weight="bold" text-anchor="start">31.8</text>
+<text x="645" y="806" font-size="23" fill="#087e73" font-weight="bold" text-anchor="end">%</text>
+<rect x="688" y="730" width="300" height="102" rx="14" fill="#eee9fc" stroke="#eee9fc"/>
+<text x="706" y="755" font-size="12" fill="#6239bc" font-weight="bold" text-anchor="start">D-BUS REMAINING</text>
+<text x="706" y="808" font-size="45" fill="#6239bc" font-weight="bold" text-anchor="start">123</text>
+<text x="963" y="806" font-size="23" fill="#6239bc" font-weight="bold" text-anchor="end">L</text>
+<text x="52" y="862" font-size="16" fill="#087e73" font-weight="bold" text-anchor="start">Connected: 1</text>
+<text x="232" y="862" font-size="16" fill="#165ea8" font-weight="bold" text-anchor="start">Pump: 1</text>
+<text x="375" y="862" font-size="16" fill="#6239bc" font-weight="bold" text-anchor="start">Valve: 0</text>
+<text x="518" y="862" font-size="16" fill="#c53c41" font-weight="bold" text-anchor="start">Automatic: false</text>
+<text x="756" y="862" font-size="16" fill="#172b4d" font-weight="bold" text-anchor="start">Heartbeat age: 0.98 s</text>
+<text x="52" y="895" font-size="15" fill="#435777" font-weight="normal" text-anchor="start">Observed version: 0.1.7+units.2c5045f</text>
+<text x="52" y="926" font-size="14" fill="#435777" font-weight="normal" text-anchor="start">123 L is the reported 0.123 m³, rounded for publication; the model at 49 cm is 123.15 L.</text>
+<text x="32" y="986" font-size="14" fill="#435777" font-weight="normal" text-anchor="start">The curves are mathematical; the old mapping is a counterfactual, not an earlier measurement.</text>
+<text x="32" y="1012" font-size="14" fill="#435777" font-weight="normal" text-anchor="start">The saved snapshot is software telemetry. Physical valve position and water level were not verified.</text>
+<text x="32" y="1037" font-size="14" fill="#435777" font-weight="normal" text-anchor="start">No live connection · no actuator test · timestamp applies only to the recorded observation above.</text>
+</g>
+</svg>

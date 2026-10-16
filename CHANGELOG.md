@@ -26,6 +26,9 @@ All notable changes to this project will be documented in this file.
   `LANGUAGE`; service identities, paths and numeric values remain unchanged.
 - Translated READMEs, operator and wiki guides, and reproducible SVG diagrams
   for architecture, calibration and valve hysteresis.
+- Color measurement-process and before/after charts, a reproducible calculation
+  walkthrough, and dated read-only Cerbo telemetry evidence, with result summaries
+  in all four READMEs and a dedicated wiki page.
 
 ### Changed
 

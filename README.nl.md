@@ -88,6 +88,30 @@ wateroppervlak moet eerst worden omgerekend naar waterhoogte.
 [Volledige configuratie — EN](docs/operator/configuration.md) ·
 [Kalibratie en beperkingen — EN](docs/operator/calibration.md)
 
+## Meetproces en vastgelegd resultaat
+
+De koppeling leest de primaire HA-waarde met eenheid, controleert de gegevens,
+rekent de bruikbare waterhoogte om naar volume en percentage en publiceert beide
+uit dezelfde meting. Een ongeldige waarde verlengt de geldigheidstermijn niet;
+na het verstrijken daarvan wordt de laatste geldige meting als niet beschikbaar
+weergegeven. Het diagram toont het proces; de berekende curve is geen sensorhistorie.
+
+![Meetproces: de HA-waarde en eenheid worden gecontroleerd en via de cilindrische tankgeometrie omgerekend naar consistente D-Bus-percentages en volumes.](docs/assets/measurement-process.svg)
+
+Een Cerbo-controle met alleen lezen op **16 oktober 2026 om 03:13:49 UTC** legde
+**49 cm → berekend 31,8217534% → 31,8% op D-Bus** vast, met
+`/Remaining=0.123 m³` (**123 L**). Gemelde waarden: verbinding `1`, pomp `1`,
+klep `0`; de heartbeat was `0,98 s` oud. Het apparaat draaide ontwikkelversie
+`0.1.7+units.2c5045f` met `ENABLE_CONTROL=False` en `LANGUAGE="en"`.
+
+![Vastgelegde Cerbo-controle: 49 cm invoer, 31,8 procent, 123 liter, verbonden, pompstatus 1 en klepstatus 0; een gedateerde momentopname, geen live telemetrie.](docs/assets/measured-result.svg)
+
+Dit toont één geslaagde telemetrievergelijking, geen fysieke acceptatietest of
+ononderbroken beschikbaarheid. De logboeken bevatten ook tijdelijke
+HA-verbindingsfouten en time-outs.
+[Proces en resultaten — EN](docs/operator/process-and-results.md) ·
+[Controlebewijs](docs/evidence/cerbo-unit-verification-2026-10-16.json).
+
 ## Bediening en veiligheid
 
 In de geconfigureerde installatie bedienen actieve HA-automatiseringen de pomp

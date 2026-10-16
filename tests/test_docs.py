@@ -44,7 +44,13 @@ def test_operator_documentation_links_resolve():
 
 
 def test_diagrams_are_accessible_and_have_calibration_units(diagrams):
-    for build in (diagrams.architecture, diagrams.calibration, diagrams.hysteresis):
+    for build in (
+        diagrams.architecture,
+        diagrams.calibration,
+        diagrams.hysteresis,
+        diagrams.measurement_process,
+        diagrams.measured_result,
+    ):
         source = build()
         parsed = ET.fromstring(source)
         ns = "{http://www.w3.org/2000/svg}"
@@ -52,10 +58,63 @@ def test_diagrams_are_accessible_and_have_calibration_units(diagrams):
         assert parsed.find(f"{ns}title").text
         assert parsed.find(f"{ns}desc").text
         assert parsed.find(f"{ns}script") is None
+        assert parsed.get("viewBox")
+        for element in parsed.iter():
+            assert element.tag.split("}")[-1] not in ("script", "foreignObject", "image")
+            for name, value in element.attrib.items():
+                assert not name.lower().startswith("on")
+                if name.split("}")[-1] == "href":
+                    assert value.startswith("#"), "Diagrams must not fetch remote resources"
     calibration = diagrams.calibration()
     for expected in ("297.94", "76.99", "115.418", "Level (%)", "Volume (L)"):
         assert expected in calibration
     assert "not measured data" in calibration
+
+
+def test_process_diagram_separates_telemetry_ownership_and_read_only_preview(diagrams):
+    process = diagrams.measurement_process()
+    for expected in (
+        "Home Assistant",
+        "Validate",
+        "Normalize",
+        "Native D-Bus",
+        "Display",
+        "CONTROL OWNERSHIP",
+        "Bridge automatic control = disabled",
+        "READ-ONLY DRY-RUN",
+        "No native D-Bus connection or registration.",
+        "No actuator commands. No service heartbeat.",
+        "not a live status",
+    ):
+        assert expected in process
+
+
+def test_result_distinguishes_mathematical_model_from_saved_observation(diagrams):
+    assert diagrams.calibrated_percent(18) == 0
+    assert diagrams.calibrated_percent(49) == pytest.approx(31.82, abs=0.005)
+    assert diagrams.calibrated_percent(93) == pytest.approx(76.99, abs=0.005)
+    assert diagrams.calibrated_percent(120) == 100
+    result = diagrams.measured_result()
+    for expected in (
+        "Wrong mapping: raw cm as %",
+        "Calibrated: usable volume / capacity",
+        "SAVED READ-ONLY OBSERVATION",
+        "2026-10-16T03:13:49Z",
+        "SNAPSHOT · NOT LIVE",
+        "49.0% wrong mapping",
+        "31.8% calibrated",
+        "123 L",
+        "0.123 m³",
+        "0.1.7+units.2c5045f",
+        "Heartbeat age: 0.98 s",
+        "Automatic: false",
+        "Connected: 1",
+        "Pump: 1",
+        "Valve: 0",
+        "counterfactual, not an earlier measurement",
+        "Physical valve position and water level were not verified.",
+    ):
+        assert expected in result
 
 
 def test_diagram_check_detects_drift_without_overwriting(diagrams, tmp_path, monkeypatch):
@@ -63,7 +122,13 @@ def test_diagram_check_detects_drift_without_overwriting(diagrams, tmp_path, mon
     monkeypatch.setattr("sys.argv", ["generate.py"])
     diagrams.main()
     expected = {p.name: p.read_bytes() for p in tmp_path.glob("*.svg")}
-    assert len(expected) == 3
+    assert set(expected) == {
+        "architecture.svg",
+        "calibration.svg",
+        "hysteresis.svg",
+        "measurement-process.svg",
+        "measured-result.svg",
+    }
     monkeypatch.setattr("sys.argv", ["generate.py", "--check"])
     diagrams.main()
     stale = tmp_path / "calibration.svg"

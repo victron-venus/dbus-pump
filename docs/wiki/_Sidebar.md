@@ -4,6 +4,7 @@
 - [Installation](Installation.md)
 - [Configuration](Configuration.md)
 - [Calibration](Calibration.md)
+- [Process and results](Process-and-results.md)
 - [Control and safety](Control-and-safety.md)
 - [Troubleshooting](Troubleshooting.md)
 - [Localization](Localization.md)

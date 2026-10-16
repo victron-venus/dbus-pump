@@ -87,6 +87,31 @@ für Abstand zur Wasseroberfläche muss zuerst in Wasserhöhe umgerechnet werden
 [Vollständige Konfiguration — EN](docs/operator/configuration.md) ·
 [Kalibrierung und Grenzen — EN](docs/operator/calibration.md)
 
+## Messablauf und aufgezeichnetes Ergebnis
+
+Die Brücke liest den primären HA-Wert samt Einheit, prüft die Daten, rechnet die
+nutzbare Wasserhöhe in Volumen und Prozent um und veröffentlicht beide aus
+derselben Messung. Ein ungültiger Messwert verlängert die Gültigkeitsfrist nicht;
+nach deren Ablauf wird die letzte gültige Messung als nicht verfügbar behandelt.
+Das Diagramm zeigt den Ablauf; die berechnete Kurve ist kein Sensorverlauf.
+
+![Messablauf: HA-Wert und Einheit werden geprüft und anhand der Zylindergeometrie in konsistente D-Bus-Prozent- und Volumenwerte umgerechnet.](docs/assets/measurement-process.svg)
+
+Eine reine Leseprüfung am Cerbo vom **16. Oktober 2026, 03:13:49 UTC** ergab
+**49 cm → berechnet 31,8217534% → 31,8% auf D-Bus**, dazu
+`/Remaining=0.123 m³` (**123 L**). Gemeldet wurden Verbindung `1`, Pumpe `1`,
+Ventil `0` und ein Heartbeat-Alter von `0,98 s`. Installiert war die
+Entwicklungsversion `0.1.7+units.2c5045f` mit `ENABLE_CONTROL=False`
+und `LANGUAGE="en"`.
+
+![Aufgezeichnete Cerbo-Prüfung: 49 cm Eingang, 31,8 Prozent, 123 Liter, verbunden, Pumpenzustand 1 und Ventilzustand 0; datierte Momentaufnahme statt Live-Telemetrie.](docs/assets/measured-result.svg)
+
+Dies belegt einen erfolgreichen Telemetrievergleich, keine physische Abnahme
+oder ununterbrochene Verfügbarkeit. Die Logs enthielten auch vorübergehende
+HA-Verbindungsfehler und Zeitüberschreitungen.
+[Ablauf und Ergebnisse — EN](docs/operator/process-and-results.md) ·
+[Prüfprotokoll](docs/evidence/cerbo-unit-verification-2026-10-16.json).
+
 ## Steuerung und Sicherheit
 
 In der konfigurierten Anlage steuern aktive HA-Automationen Pumpe und Ventil.

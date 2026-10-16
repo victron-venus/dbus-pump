@@ -28,6 +28,7 @@ English, Russian, German and Dutch without changing protocol identities.
 4. [Control and safety](Control-and-safety.md): ownership, manual modes and stale data.
 5. [Troubleshooting](Troubleshooting.md): observe first, diagnose without toggling.
 6. [Localization](Localization.md): runtime language and translation contributions.
+7. [Process and results](Process-and-results.md): the conversion path and a dated Cerbo check.
 
 The configured site runs HA automations for the water system and keeps bridge
 `ENABLE_CONTROL=False`. That flag suppresses AUTO only; manual commands and

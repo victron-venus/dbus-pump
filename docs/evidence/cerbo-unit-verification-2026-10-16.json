@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "kind": "dated_read_only_telemetry_snapshot",
+  "checked_utc": "2026-10-16T03:13:49.986426+00:00",
+  "runtime": {
+    "version": "0.1.7+units.2c5045f",
+    "source_commit": "2c5045fb298e4f3428cb34c4775960d43e2ffc52",
+    "release_status": "development"
+  },
+  "configuration": {
+    "source_entity": "sensor.water_level_2_water_level",
+    "pump_entity": "switch.pump_power_enable",
+    "source_unit": "cm",
+    "tank_capacity_liters": 387.0,
+    "tank_radius_cm": 35.56,
+    "tank_empty_offset_cm": 18.0,
+    "automatic_control_enabled": false,
+    "language": "en",
+    "local_and_installed_configuration_hashes_match": true
+  },
+  "observed": {
+    "source_value_cm": 49.0,
+    "reported_source_unit": "cm",
+    "expected_percent": 31.821753415983423,
+    "dbus_percent": 31.8,
+    "dbus_remaining_m3": 0.123,
+    "tank_connected": 1,
+    "pump_state": 1,
+    "valve_state": 0,
+    "heartbeat_age_seconds": 0.9777495861053467
+  },
+  "acceptance": {
+    "maximum_percent_difference": 0.11,
+    "required_tank_connected": 1,
+    "maximum_heartbeat_age_seconds": 15,
+    "passed": true
+  },
+  "method": [
+    "Validate the installed configuration without changing it.",
+    "Poll one HA snapshot using the installed client and close its HTTP session.",
+    "Calculate the expected level using the installed normalizer.",
+    "Read the running services through D-Bus GetValue.",
+    "Read the heartbeat file modification time and compare acceptance thresholds."
+  ],
+  "limitations": [
+    "Static snapshot, not continuous monitoring or a stable-release qualification.",
+    "Geometry is configured, not independently physically measured in this check.",
+    "Switch states are reported telemetry, not direct proof of physical position or flow.",
+    "Earlier logs contained transient HA connection refusals and timeouts; this snapshot shows recovery only at the stated time.",
+    "No configuration change, equipment command, restart, reboot or failure drill was performed."
+  ]
+}

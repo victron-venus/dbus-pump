@@ -13,6 +13,7 @@ commands, read [control ownership and failure behavior](control.md).
 - [Installation, updates, autostart and rollback](installation.md)
 - [Configuration and D-Bus interfaces](configuration.md)
 - [Sensor units, geometry and calibration](calibration.md)
+- [Measurement process and recorded Cerbo results](process-and-results.md)
 - [Control, command queue and failure behavior](control.md)
 - [Troubleshooting and acceptance checks](troubleshooting.md)
 - [Language selection and translation contributions](localization.md)

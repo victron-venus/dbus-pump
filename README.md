@@ -75,6 +75,30 @@ always uses **%**. See the [complete configuration reference](docs/operator/conf
 
 ![Calibration curve for a 387 L vertical cylinder with an 18 cm empty offset and 35.56 cm radius.](docs/assets/calibration.svg)
 
+## Measurement process and recorded result
+
+The bridge reads the primary HA value and unit, validates the sample, converts
+usable water height to volume and percentage, and publishes both from that same
+measurement. An invalid sample does not renew freshness; the last valid
+measurement becomes unavailable when its freshness deadline expires. The diagram
+shows the process; its calculations are not a sensor history.
+
+![Measurement process: HA input and unit validation, cylindrical-tank conversion, then consistent D-Bus percentage and volume.](docs/assets/measurement-process.svg)
+
+A read-only Cerbo check at **2026-10-16 03:13:49 UTC** recorded **49 cm →
+31.8217534% calculated → 31.8% on D-Bus**, with `/Remaining=0.123 m³`
+(**123 L**). Reported values were connected `1`, pump `1`, valve `0`; heartbeat
+age was `0.98 s`. The device used development build `0.1.7+units.2c5045f`,
+`ENABLE_CONTROL=False` and `LANGUAGE="en"`.
+
+![Recorded Cerbo verification: 49 cm input, 31.8 percent, 123 liters, connected, pump state 1 and valve state 0; timestamped snapshot, not live telemetry.](docs/assets/measured-result.svg)
+
+This records one successful telemetry comparison, not physical actuator
+acceptance or uninterrupted availability. Logs also contained transient HA
+connection/timeout errors. Read the [process and results guide](docs/operator/process-and-results.md)
+and [recorded evidence](docs/evidence/cerbo-unit-verification-2026-10-16.json)
+for calculations, scope and limitations.
+
 ## Interfaces and control ownership
 
 Default D-Bus identities are stable across languages:

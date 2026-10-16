@@ -14,6 +14,7 @@ PAGES = (
     "Installation.md",
     "Configuration.md",
     "Calibration.md",
+    "Process-and-results.md",
     "Control-and-safety.md",
     "Troubleshooting.md",
     "Localization.md",
