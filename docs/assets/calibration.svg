@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600" role="img" aria-labelledby="title desc">
+<title id="title">Example tank calibration curve</title>
+<desc id="desc">Calculated vertical-cylinder curve using capacity 387 L, radius 35.56 cm and empty offset 18 cm. Each usable centimetre is 3.973 L. 93 cm gives 297.94 L and 76.99 percent; full is 115.418 cm. Values below empty and above capacity are clamped.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#435777"/></marker></defs>
+<rect width="1040" height="600" rx="20" fill="#fff"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<text x="36" y="47" font-size="28" fill="#172b4d" font-weight="bold" text-anchor="start">Calibration · height to usable volume</text>
+<text x="36" y="78" font-size="18" fill="#172b4d" font-weight="normal" text-anchor="start">Vertical cylinder · 387 L capacity · 35.56 cm radius · empty reading 18 cm</text>
+<text x="90" y="121" font-size="17" fill="#165ea8" font-weight="bold" text-anchor="start">Level (%)</text>
+<text x="902" y="121" font-size="17" fill="#176443" font-weight="bold" text-anchor="start">Volume (L)</text>
+<line x1="90" y1="465.0" x2="880" y2="465.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="75" y="471.0" font-size="16" fill="#165ea8" font-weight="normal" text-anchor="end">0</text>
+<text x="902" y="471.0" font-size="16" fill="#176443" font-weight="normal" text-anchor="start">0</text>
+<line x1="90" y1="385.0" x2="880" y2="385.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="75" y="391.0" font-size="16" fill="#165ea8" font-weight="normal" text-anchor="end">25</text>
+<text x="902" y="391.0" font-size="16" fill="#176443" font-weight="normal" text-anchor="start">96.75</text>
+<line x1="90" y1="305.0" x2="880" y2="305.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="75" y="311.0" font-size="16" fill="#165ea8" font-weight="normal" text-anchor="end">50</text>
+<text x="902" y="311.0" font-size="16" fill="#176443" font-weight="normal" text-anchor="start">193.5</text>
+<line x1="90" y1="225.0" x2="880" y2="225.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="75" y="231.0" font-size="16" fill="#165ea8" font-weight="normal" text-anchor="end">75</text>
+<text x="902" y="231.0" font-size="16" fill="#176443" font-weight="normal" text-anchor="start">290.25</text>
+<line x1="90" y1="145.0" x2="880" y2="145.0" stroke="#dbe3ef" stroke-width="1"/>
+<text x="75" y="151.0" font-size="16" fill="#165ea8" font-weight="normal" text-anchor="end">100</text>
+<text x="902" y="151.0" font-size="16" fill="#176443" font-weight="normal" text-anchor="start">387</text>
+<line x1="90.0" y1="145" x2="90.0" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="90.0" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">0</text>
+<line x1="199.3846153846154" y1="145" x2="199.3846153846154" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="199.3846153846154" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">18</text>
+<line x1="333.0769230769231" y1="145" x2="333.0769230769231" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="333.0769230769231" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">40</text>
+<line x1="454.61538461538464" y1="145" x2="454.61538461538464" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="454.61538461538464" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">60</text>
+<line x1="576.1538461538462" y1="145" x2="576.1538461538462" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="576.1538461538462" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">80</text>
+<line x1="697.6923076923077" y1="145" x2="697.6923076923077" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="697.6923076923077" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">100</text>
+<line x1="880.0" y1="145" x2="880.0" y2="465" stroke="#e7edf5" stroke-width="1"/>
+<text x="880.0" y="493" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="middle">130</text>
+<polyline points="90.000,465.000 199.385,465.000 791.384,145.000 880.000,145.000" fill="none" stroke="#165ea8" stroke-width="4"/>
+<line x1="655.1538461538462" y1="465.0" x2="655.1538461538462" y2="218.63803806980567" stroke="#a04a08" stroke-width="2" stroke-dasharray="6 5"/>
+<circle cx="655.154" cy="218.638" r="6" fill="#a04a08"/>
+<rect x="132" y="165" width="390" height="88" rx="14" fill="#fff6e9" stroke="#d5b488"/>
+<text x="149" y="197" font-size="20" fill="#a04a08" font-weight="bold" text-anchor="start">93 cm → 297.94 L → 76.99%</text>
+<text x="149" y="229" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">One primary sample drives both outputs</text>
+<text x="782.3840973804553" y="129" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="end">Full at 115.418 cm</text>
+<text x="485" y="530" font-size="18" fill="#172b4d" font-weight="normal" text-anchor="middle">Primary sensor reading (cm)</text>
+<text x="36" y="570" font-size="16" fill="#172b4d" font-weight="normal" text-anchor="start">Calculated example, not measured data. Output clamps to 0-100% / 0-387 L.</text>
+</g>
+</svg>

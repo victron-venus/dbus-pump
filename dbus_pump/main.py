@@ -2,25 +2,36 @@
 
 import argparse
 import logging
-import math
 import os
 import signal
 import sys
 import time
+from numbers import Integral
 
 from dbus_pump import config
-from dbus_pump.control import MODE_OFF, MODE_ON, ValveController
-from dbus_pump.ha_client import HaClient
+from dbus_pump.control import MODE_AUTO, MODE_OFF, MODE_ON, ValveController
+from dbus_pump.ha_client import CircuitBreaker, HaClient
 from dbus_pump.service import VEDBUS_AVAILABLE, WaterSystemServices
+from dbus_pump.tank import finite_number, normalize_level
 from dbus_pump.worker import HaWorker
 
 logger = logging.getLogger("dbus-pump")
+
+try:
+    from dbus import Boolean as DbusBoolean
+except ImportError:
+    _BOOLEAN_TYPES = (bool,)
+else:
+    # dbus.Boolean is an int subclass, not a Python bool subclass.
+    _BOOLEAN_TYPES = (bool, DbusBoolean)
 
 
 def _mode_handler_wrap(handler):
     """Vedbus onchange signatures vary across versions; take the last arg."""
 
     def cb(*args):
+        if not args:
+            return False
         accepted = handler(args[-1])
         # vedbus rejects the write (SetValue -> 2) unless the callback is
         # truthy, leaving /Mode at its old value.
@@ -38,20 +49,33 @@ class App:
         controller: ValveController,
         services: WaterSystemServices,
         enable_control: bool,
+        read_only: bool = False,
     ) -> None:
         self.client = client
         self.controller = controller
         self.services = services
-        self.enable_control = enable_control
+        self.read_only = read_only
+        self.enable_control = enable_control and not read_only
         self.last_ok_time: float | None = None
         self._last_commanded_valve: bool | None = None
         self.loop_interval_ms = max(250, int(config.POLL_INTERVAL * 1000))
         self.worker: HaWorker | None = None
         self._last_snapshot = {"level": None, "pump": None, "valve": None, "ok": False}
         self._valve_reconcile_required = False
+        self._level_rejection_logged = False
 
     # --- GX -> HA manual mode writes ----------------------------------------
     def handle_mode(self, which: str, mode: int) -> bool:
+        if self.read_only:
+            return False
+        if (
+            which not in ("pump", "valve")
+            or isinstance(mode, _BOOLEAN_TYPES)
+            or not isinstance(mode, Integral)
+            or mode not in (MODE_AUTO, MODE_ON, MODE_OFF)
+        ):
+            logger.warning("Rejected invalid %s /Mode value: %r", which, mode)
+            return False
         entity = config.HA_VALVE_SWITCH_ENTITY if which == "valve" else config.HA_PUMP_SWITCH_ENTITY
         logger.info("%s /Mode changed to %s", which, mode)
         action = {MODE_ON: ("turn_on", True), MODE_OFF: ("turn_off", False)}.get(mode)
@@ -88,6 +112,8 @@ class App:
         return self._request_service(act, entity, completed)
 
     def _request_service(self, action, entity, callback, deduplicate=False):
+        if self.read_only:
+            return False
         if self.worker is not None:
             if deduplicate and self.worker.service_pending(entity, action):
                 return True
@@ -101,6 +127,9 @@ class App:
         Best effort — a dead HA or open breaker still leaves the valve as-is;
         residual risk of Cerbo power loss is documented in the README.
         """
+        if self.read_only:
+            self.client.close()
+            return
         if self.worker is not None:
             self.worker.stop()
             return
@@ -122,7 +151,8 @@ class App:
             ):
                 self.apply_snapshot(dict(self._last_snapshot, ok=False))
             self.worker.poll(self.apply_snapshot)
-            _write_heartbeat()
+            if not self.read_only:
+                _write_heartbeat()
             return True
         started_at = _now()
         snapshot = self.client.poll()
@@ -132,36 +162,54 @@ class App:
         """Apply HA results on the D-Bus main loop (also used by dry-run)."""
         self._last_snapshot = dict(snapshot)
         now = _now()
-        started_at = snapshot.get("_sample_started_at", now)
-        now_ok = snapshot["ok"] and 0 <= now - started_at < config.SENSOR_STALE_TIMEOUT
+        started_at = finite_number(snapshot.get("_sample_started_at", now))
+        acquired_recently = (
+            started_at is not None and 0 <= now - started_at < config.SENSOR_STALE_TIMEOUT
+        )
+        level = normalize_level(
+            snapshot["level"],
+            config.HA_WATER_LEVEL_UNIT,
+            config.TANK_CAPACITY_LITERS,
+            config.TANK_OFFSET_CM,
+            config.TANK_RADIUS_CM,
+            snapshot.get("level_unit"),
+        )
+        if not acquired_recently:
+            level = None
+        if level is None:
+            # A future timestamp can eventually enter the current window.
+            # Do not let a rejected sample resurrect during AUTO reconciliation.
+            self._last_snapshot["level"] = None
+        now_ok = bool(snapshot["ok"] and acquired_recently and level is not None)
+        if snapshot["ok"] and acquired_recently and level is None:
+            if not self._level_rejection_logged:
+                logger.warning("Rejected tank measurement: check value, unit and tank geometry")
+            self._level_rejection_logged = True
         if now_ok:
             self.last_ok_time = started_at
+            self._level_rejection_logged = False
         ha_reachable = (
             self.last_ok_time is not None
-            and (_now() - self.last_ok_time) < config.SENSOR_STALE_TIMEOUT
+            and 0 <= now - self.last_ok_time < config.SENSOR_STALE_TIMEOUT
         )
         self.services.set_connected(ha_reachable)
 
-        level = snapshot["level"] if now_ok else self.controller_level_if_fresh(snapshot)
-        # Liters computed here from the raw height; falls back to Capacity x Level.
-        self.services.update_tank_level(
-            level,
-            remaining_m3=_tank_remaining_m3(
-                snapshot.get("cm") if level is not None else None,
-                config.TANK_OFFSET_CM,
-                config.TANK_RADIUS_CM,
-            ),
-        )
+        # One normalized value drives display, volume and automatic control.
+        # Network failures may retain the last value only until its original
+        # deadline; malformed or delayed samples never become usable via that grace.
+        level = level if now_ok or ha_reachable else None
+        self.services.update_tank_level(level)
 
         self.services.update_device_state("pump", snapshot["pump"])
         self.services.update_device_state("valve", snapshot["valve"])
 
         if self.enable_control:
-            self._apply_automatic_control(snapshot, now_ok, started_at)
+            self._apply_automatic_control(dict(snapshot, level=level), now_ok, started_at)
         elif snapshot.get("valve") is not None:
             self._last_commanded_valve = snapshot["valve"]
 
-        _write_heartbeat()
+        if not self.read_only:
+            _write_heartbeat()
         return True
 
     def _apply_automatic_control(self, snapshot, now_ok, started_at):
@@ -206,29 +254,9 @@ class App:
         if self._request_service(act, entity, completed, deduplicate=True):
             self._valve_reconcile_required = False
 
-    def controller_level_if_fresh(self, snapshot):
-        # Last-known level stays valid only inside the stale window.
-        if (
-            self.last_ok_time is not None
-            and (_now() - self.last_ok_time) < config.SENSOR_STALE_TIMEOUT
-        ):
-            return snapshot["level"]
-        return None
-
 
 def _now() -> float:
     return time.monotonic()
-
-
-def _tank_remaining_m3(water_cm: float | None, offset_cm: float, radius_cm: float) -> float | None:
-    """Remaining volume from raw water-column height, computed here so HA is
-    only a sensor source. Cylinder with a dead zone: negative readings (sensor
-    below the offset) clamp to 0. None when the reading or geometry is absent
-    (caller falls back to Capacity x Level)."""
-    if water_cm is None or radius_cm <= 0:
-        return None
-    liters = (water_cm - offset_cm) * math.pi * radius_cm * radius_cm / 1000.0
-    return max(0.0, liters) / 1000.0
 
 
 def _write_heartbeat() -> None:
@@ -248,7 +276,9 @@ def _setup_logging(debug: bool) -> None:
     )
 
 
-def build_app() -> App:
+def build_app(*, dry_run: bool = False) -> App:
+    """Build normal services, or an isolated read-only preview for dry-run."""
+    config.validate()
     controller = ValveController(
         start_value=config.VALVE_START_VALUE,
         stop_value=config.VALVE_STOP_VALUE,
@@ -262,22 +292,37 @@ def build_app() -> App:
         pump_entity=config.HA_PUMP_SWITCH_ENTITY,
         valve_entity=config.HA_VALVE_SWITCH_ENTITY,
         timeout=config.HA_TIMEOUT,
+        breaker=CircuitBreaker(config.CIRCUIT_OPEN_THRESHOLD, config.CIRCUIT_RESET_TIMEOUT),
         cm_entity=config.TANK_WATER_CM_ENTITY,
     )
-    services = WaterSystemServices(
-        tank_instance=config.DEVICE_INSTANCE_TANK,
-        pump_startstop_instance=config.PUMP_STARTSTOP_INSTANCE,
-        valve_startstop_instance=config.VALVE_STARTSTOP_INSTANCE,
-        version=config.SOFTWARE_VERSION,
-        capacity_m3=config.TANK_CAPACITY_LITERS / 1000.0,
-        on_pump_mode=_mode_handler_wrap(lambda m: app.handle_mode("pump", int(m))),
-        on_valve_mode=_mode_handler_wrap(lambda m: app.handle_mode("valve", int(m))),
-        register=False,
-    )
-    app = App(client, controller, services, enable_control=config.control_enabled())
-    services.set_connected(False)
-    services.register()
-    if not app.enable_control:
+    try:
+        services = WaterSystemServices(
+            tank_instance=config.DEVICE_INSTANCE_TANK,
+            pump_startstop_instance=config.PUMP_STARTSTOP_INSTANCE,
+            valve_startstop_instance=config.VALVE_STARTSTOP_INSTANCE,
+            version=config.SOFTWARE_VERSION,
+            capacity_m3=config.TANK_CAPACITY_LITERS / 1000.0,
+            on_pump_mode=_mode_handler_wrap(lambda m: app.handle_mode("pump", m)),
+            on_valve_mode=_mode_handler_wrap(lambda m: app.handle_mode("valve", m)),
+            register=False,
+            language=config.LANGUAGE,
+            force_null=dry_run,
+        )
+        app = App(
+            client,
+            controller,
+            services,
+            enable_control=config.control_enabled(),
+            read_only=dry_run,
+        )
+        services.set_connected(False)
+        services.register()
+    except Exception:
+        client.close()
+        raise
+    if dry_run:
+        logger.info("Dry run: read-only HA snapshot, in-memory services, no actuator commands")
+    elif not app.enable_control:
         logger.warning(
             "Automation DISABLED (ENABLE_CONTROL=False or token unset) - "
             "monitoring only, valve will not be actuated automatically"
@@ -313,21 +358,26 @@ def main() -> int:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="run one control cycle against a NullDbusService and exit",
+        help="preview one HA snapshot without native D-Bus registration or actuator commands",
     )
     args = parser.parse_args()
     _setup_logging(args.debug)
 
     if args.dry_run:
-        app = build_app()
-        app.tick()
-        for name, svc in (
-            ("tank", app.services.tank),
-            ("pump", app.services.pump),
-            ("valve", app.services.valve),
-        ):
-            print(name, svc.service_name, dict(getattr(svc, "items", {})))
-        return 0
+        app = build_app(dry_run=True)
+        try:
+            app.tick()
+            for name, svc in (
+                ("tank", app.services.tank),
+                ("pump", app.services.pump),
+                ("valve", app.services.valve),
+            ):
+                print(name, svc.service_name, dict(getattr(svc, "items", {})))
+            return 0
+        finally:
+            # Normal shutdown closes the physical valve. Dry-run only closes
+            # the HTTP session, including when polling or printing fails.
+            app.client.close()
 
     if not VEDBUS_AVAILABLE:
         logger.error("vedbus/dbus not available - run on the Cerbo GX")

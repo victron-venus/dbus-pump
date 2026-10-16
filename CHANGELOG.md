@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Interpret tank measurements using the explicit `HA_WATER_LEVEL_UNIT` (`%`
+  or `cm`). Centimetre sources use the configured vertical-cylinder geometry;
+  level, remaining volume and automatic valve decisions share one normalized
+  measurement. Conflicting HA unit metadata and invalid samples are rejected.
+- Validate geometry, control settings and timing before registering D-Bus
+  services, and prevent rejected future samples from becoming valid later.
+- Apply the configured circuit-breaker thresholds and update the example pump
+  entity to `switch.pump_power_enable`.
+- Make `--dry-run` read-only even on a GX with automatic control configured:
+  use in-memory services, suppress actuator and heartbeat writes, and close the
+  HTTP session on success or failure.
+- Reject non-integer and unsupported manual `/Mode` values before they can
+  trigger a switch command; do not truncate fractions into valid commands.
+
+### Added
+
+- English, Russian, German and Dutch display labels and D-Bus status text through
+  `LANGUAGE`; service identities, paths and numeric values remain unchanged.
+- Translated READMEs, operator and wiki guides, and reproducible SVG diagrams
+  for architecture, calibration and valve hysteresis.
+
+### Upgrade
+
+- Set `HA_WATER_LEVEL_UNIT = "cm"` when the primary HA entity reports
+  centimetres, and configure capacity, empty-reading offset and cylinder radius.
+  The default `%` remains appropriate for an actual percentage source.
+- `TANK_WATER_CM_ENTITY` is now diagnostic only. Remaining volume follows the
+  primary measurement instead of an independent secondary sensor; review this
+  change before upgrading installations that previously used different sources.
+- Preserve the existing control owner. Sites controlled by HA automations should
+  keep `ENABLE_CONTROL = False`. A normal service shutdown still attempts to
+  close the city-water valve, including in monitoring mode.
+
 ## [0.1.7] - Development line
 
 ### Maintenance

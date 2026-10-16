@@ -20,6 +20,14 @@ def test_service_names():
     assert s.valve.service_name == "com.victronenergy.pump.startstop2"
 
 
+def test_default_display_names_are_backward_compatible():
+    s = build()
+    assert s.tank["/ProductName"] == "Water tank"
+    assert s.tank["/CustomName"] == "Water tank (HA)"
+    assert s.pump["/ProductName"] == s.pump["/CustomName"] == "Water pump"
+    assert s.valve["/ProductName"] == s.valve["/CustomName"] == "City water valve"
+
+
 def test_identity_paths_present():
     s = build()
     for svc in (s.tank, s.pump, s.valve):
