@@ -1,5 +1,9 @@
 # Release-candidate fuzz testing
 
+See the [illustrated RC fuzzing process and verified rollout results](https://github.com/victron-venus/venus-os-ci-toolkit/blob/main/docs/rc-fuzzing-results.md)
+for the shared release flow, evidence requirements and a dated cross-project
+snapshot. The project-specific scope and reproduction guidance below still apply.
+
 ## Scope and assertions
 
 **Valve state-machine transitions.** The target varies sensor values, sample ages, freshness and requested modes over bounded sequences. It calls the real ValveController with an explicit monotonic clock and checks invalid-mode rejection, manual mode semantics and closure when evidence expires. It does not connect to Home Assistant, D-Bus, pumps or valves.
