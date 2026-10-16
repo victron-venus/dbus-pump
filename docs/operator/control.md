@@ -41,7 +41,8 @@ callback delivery, determines evidence age.
 ## Manual modes and the command queue
 
 `/Mode` accepts only integral numeric values `0` AUTO, `1` ON and `2` OFF.
-Booleans, fractions, strings, lists and out-of-range values are rejected. Manual ON intentionally overrides
+Booleans, all floats (including `1.0`), strings, lists and out-of-range values
+are rejected. Manual ON intentionally overrides
 the automatic level/stale policy; use it under operator supervision. Returning
 to AUTO re-evaluates cached data without pretending it is fresh, when automatic
 control is enabled.
@@ -74,6 +75,7 @@ setpoints, chargers, thermostats or unrelated relays. Read
 
 In this development revision, `--dry-run` forces the off-device D-Bus stand-in,
 never publishes live services or sends switch commands, closes its HA session,
-and reports normalized percentage/liters. It can still read HA using configured
-credentials. Older releases did not fully isolate dry-run actuation/registration;
+and reports normalized tank/switch values in memory (volume paths use m³).
+It reads one HA snapshot using configured credentials and does not update the
+real service heartbeat. Older releases did not fully isolate dry-run actuation/registration;
 do not assume this guarantee when running an older installed package.
