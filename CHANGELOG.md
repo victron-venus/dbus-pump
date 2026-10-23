@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2026-10-22
+
+### Fixed
+
+- Update certifi to 2026.10.19 to remove the distrusted emSign ECC Root CA - G3 (GHSA-6q48-6c7w-9gw2).
+
+### Changed
+
+- Allow the release API status to catch up for up to five minutes while preserving exact run identity, attempt and required-check validation.
+
+### Upgrade
+
+Use the documented update procedure and preserve local configuration. No configuration migration is required. Keep the previous immutable package available for rollback, and update affected server certificate chains instead of disabling TLS verification.
+
+### Security
+
+The locked certificate bundle incorporates the upstream trust-store correction. Certificate and hostname verification remain enabled. Offline package checks do not establish live device acceptance.
+
 ## [0.1.10] - 2026-10-18
 
 ### Changed
