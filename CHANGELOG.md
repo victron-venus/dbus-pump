@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.12] - Unreleased
+
+### Changed
+
+- Update the locked setuptools build tool from 84.0.0 to 84.1.0.
+- Refresh grouped shared CI references while retaining aligned RC evidence pins.
+- Use verified release IDs for asset uploads and bounded metadata propagation waits.
+
+### Upgrade
+
+This maintenance release changes build and release tooling. Pump control logic and runtime dependencies remain unchanged; a release build does not itself qualify a physical pump installation. Preserve an accepted package for rollback.
+
+### Security
+
+The setuptools build dependency is now 84.1.0. No new runtime security mechanism is claimed. Keep device control endpoints restricted and retain existing local safety interlocks.
+
 ## [0.1.11] - 2026-10-22
 
 ### Fixed
