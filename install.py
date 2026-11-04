@@ -73,6 +73,7 @@ PAYLOAD = (
     "docs/rc-fuzzing.md",
     "docs/release-acceptance.md",
     "docs/release-packaging.md",
+    "docs/release-read-safety.md",
     "docs/release-signatures.md",
     "docs/release-versioning.md",
     "docs/release-workflow.md",
