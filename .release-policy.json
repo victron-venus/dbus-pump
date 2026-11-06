@@ -73,7 +73,13 @@
     "toolkit_ref": "2439b9eb60cdbcd02edf43b62c551a357be3accc"
   },
   "change_scope": {
-    "documentation_paths": [],
+    "documentation_paths": [
+      "GOVERNANCE.md",
+      "README.de.md",
+      "README.nl.md",
+      "README.ru.md",
+      "ROADMAP.md"
+    ],
     "required_paths": [
       "CHANGELOG.md",
       "README.md"
