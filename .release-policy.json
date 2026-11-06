@@ -3,7 +3,8 @@
     "ci.yml",
     "release-security.yml",
     "codeql.yml",
-    "dependency-review.yml"
+    "dependency-review.yml",
+    "docs.yml"
   ],
   "artifact_pattern": "release-assets*",
   "local_checks": [
@@ -70,5 +71,17 @@
   "sign_releases": true,
   "fuzzing": {
     "toolkit_ref": "2439b9eb60cdbcd02edf43b62c551a357be3accc"
+  },
+  "change_scope": {
+    "documentation_paths": [],
+    "required_paths": [
+      "CHANGELOG.md",
+      "README.md"
+    ],
+    "always_validate_workflows": [
+      "release-security.yml",
+      "codeql.yml",
+      "docs.yml"
+    ]
   }
 }
