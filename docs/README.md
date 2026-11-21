@@ -3,6 +3,10 @@
 A Venus OS D-Bus service that drives a water pump from Home Assistant sensors,
 with a tank calibration model and an operator guide.
 
+Every page under `docs/` is reachable from this index. Add, rename or remove a
+line here in the same change that adds, renames or removes a page, so the list
+stays the entry point for the directory.
+
 ## Operator guide
 
 - [Operator guide](operator/README.md) — the version scope and where each operator page starts.
