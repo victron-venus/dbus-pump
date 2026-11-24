@@ -1,9 +1,31 @@
 # Changelog
 
+## [0.1.13] - Unreleased
+
+### Changed
+
+- state how the documentation index is maintained (#172).
+- keep local instruction files out of git.
+- add a navigation index for docs/.
+- verify the current default branch before reviewed merges.
+- preserve automerge withdrawal after base advances (#155).
+- reevaluate reviewed dependency merges after CI (#154).
+- cover ordinary documentation without weakening validation (#152).
+- scope builds while preserving documentation and security checks (#151).
+- enable native compiled dependency updates (#150).
+- remove obsolete review dependency (#149).
+
+### Upgrade
+
+This maintenance release changes build and release tooling. Pump control logic and runtime dependencies remain unchanged; a release build does not itself qualify a physical pump installation. Preserve an accepted package for rollback.
+
+### Security
+
+The setuptools build dependency is now 84.1.0. No new runtime security mechanism is claimed. Keep device control endpoints restricted and retain existing local safety interlocks.
+
 All notable changes to this project will be documented in this file.
 
-## [0.1.12] - Unreleased
-
+## [0.1.12] - 2026-11-02
 ### Changed
 
 - Update the locked setuptools build tool from 84.0.0 to 84.1.0.
