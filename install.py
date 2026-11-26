@@ -38,6 +38,7 @@ PAYLOAD = (
     "dbus_pump/worker.py",
     "docs/CI-ORCHESTRATION.md",
     "docs/DEPLOYMENT-NOTES.md",
+    "docs/README.md",
     "docs/STATIC_ANALYSIS.md",
     "docs/VERSIONING.md",
     "docs/architecture.md",
